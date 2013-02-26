@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Org-mode and julia: an introduction</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="Org-mode and julia: an introduction"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="author" content="G. Jay Kerns"/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style><script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Org-mode and julia: an introduction</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. What you need to get started</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Julia</a></li>
+<li><a href="#sec-1-2">1.2. Add on packages</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. Winston</a></li>
+<li><a href="#sec-1-2-2">1.2.2. Gadfly</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. ESS</a></li>
+<li><a href="#sec-1-4">1.4. Org-mode</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Getting started</a></li>
+<li><a href="#sec-3">3. Plotting with Winston</a></li>
+<li><a href="#sec-4">4. Plotting with Gadfly</a></li>
+<li><a href="#sec-5">5. Fitting linear models</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> What you need to get started</h2>
+<div class="outline-text-2" id="text-1">
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(load <span style="color: #8b2252;">"~/gitm/projects/ob-julia.el"</span>)
+(org-babel-julia-initiate-session <span style="color: #8b2252;">"*julia*"</span> nil)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">rand</span>(9)
+</pre>
+</div>
+
+<pre class="example">
+9-element Float64 Array:
+ 0.683697
+ 0.115187
+ 0.65871 
+ 0.126754
+ 0.296551
+ 0.117243
+ 0.952961
+ 0.74621 
+ 0.92133
+</pre>
+</div>
+
+<div id="outline-container-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Julia</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>First install takes the longest, later updates not so bad.
+</li>
+<li>all the dependencies
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Add on packages</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Based on <a href="http://www.johnmyleswhite.com/notebook/2012/12/02/the-state-of-statistics-in-julia/" >The State of Statistics in Julia</a> by John Myles White.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"DataFrames"</span>, <span style="color: #8b2252;">"Distributions"</span>, <span style="color: #8b2252;">"MCMC"</span>, <span style="color: #8b2252;">"Optim"</span>, <span style="color: #8b2252;">"NHST"</span>, <span style="color: #8b2252;">"Clustering"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"RDatasets"</span>)
+</pre>
+</div>
+
+<p>
+This one is pretty big.
+</p>
+</div>
+
+<div id="outline-container-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> Winston</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"Winston"</span>)
+</pre>
+</div>
+
+<p>
+This one has lots of dependencies.
+</p>
+</div>
+</div>
+<div id="outline-container-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Gadfly</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"Gadfly"</span>)
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>packages take a lot longer to load than R
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> ESS</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+<a href="http://stat.ethz.ch/ESS/index.php?Section=download" >http://stat.ethz.ch/ESS/index.php?Section=download</a>
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">rand</span>(9)
+<span style="color: #0000ff;">print</span>(<span style="color: #8b2252;">"hello"</span>)
+</pre>
+</div>
+
+<pre class="example">
+9-element Float64 Array:
+ 0.914156 
+ 0.489364 
+ 0.840862 
+ 0.389737 
+ 0.914611 
+ 0.398722 
+ 0.298391 
+ 0.592467 
+ 0.0428432
+hello
+</pre>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #8b2252;">"~/path/to/ESS/lisp"</span>)
+(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ess-site</span>)
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Org-mode</h3>
+<div class="outline-text-3" id="text-1-4">
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq  inferior-julia-program-name <span style="color: #8b2252;">"~/path/to/julia-release-basic"</span>)
+</pre>
+</div>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (julia . t)))
+</pre>
+</div>
+
+
+<p>
+For inline image display
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+(add-hook 'org-mode-hook 'org-display-inline-images)
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Getting started</h2>
+<div class="outline-text-2" id="text-2">
+<div class="org-src-container">
+
+<pre class="src src-julia">[3:50]
+x = [3:6]
+y = [5:11]
+z = [4:7]
+x + z
+ans
+<span style="color: #0000ff;">sum</span>(x)
+<span style="color: #0000ff;">mean</span>(x)
+<span style="color: #0000ff;">exp</span>(x)
+<span style="color: #0000ff;">log</span>(x)
+<span style="color: #0000ff;">sort</span>(x)
+<span style="color: #0000ff;">sqrt</span>(x)
+<span style="color: #0000ff;">diff</span>(x)
+x[3]
+y[2:4]
+<span style="color: #0000ff;">typeof</span>(x)
+1.0
+1.
+<span style="color: #008b8b;">Inf</span>
+-<span style="color: #008b8b;">Inf</span>
+<span style="color: #008b8b;">NaN</span>
+<span style="color: #008b8b;">true</span>
+<span style="color: #008b8b;">false</span>
+1 + 2im
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Plotting with Winston</h2>
+<div class="outline-text-2" id="text-3">
+<div class="org-src-container">
+
+<pre class="src src-julia">using Winston
+x = <span style="color: #0000ff;">linspace</span>( 0, 3pi, 100 )
+c = <span style="color: #0000ff;">cos</span>(x)
+s = <span style="color: #0000ff;">sin</span>(x)
+p = <span style="color: #0000ff;">FramedPlot</span>();
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"title"</span>, <span style="color: #8b2252;">"title!"</span>)
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"xlabel"</span>, L<span style="color: #8b2252;">"\Sigma x^2_i"</span>)
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"ylabel"</span>, L<span style="color: #8b2252;">"\Theta_i"</span>)
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">FillBetween</span>(x, c, x, s) )
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">Curve</span>(x, c, <span style="color: #8b2252;">"color"</span>, <span style="color: #8b2252;">"red"</span>) )
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">Curve</span>(x, s, <span style="color: #8b2252;">"color"</span>, <span style="color: #8b2252;">"blue"</span>) )
+<span style="color: #0000ff;">file</span>(p, <span style="color: #8b2252;">"blah2.png"</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="blah2.png"  alt="blah2.png"/></p>
+<p></p>
+</div>
+</div>
+</div>
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Plotting with Gadfly</h2>
+<div class="outline-text-2" id="text-4">
+<div class="org-src-container">
+
+<pre class="src src-julia">using RDatasets
+using Gadfly
+using Compose
+iris = <span style="color: #0000ff;">data</span>(<span style="color: #8b2252;">"datasets"</span>, <span style="color: #8b2252;">"iris"</span>)
+p = <span style="color: #0000ff;">plot</span>(iris, {:x =&gt; <span style="color: #8b2252;">"Sepal.Length"</span>, :y =&gt; <span style="color: #8b2252;">"Sepal.Width"</span>}, Geom.point);
+<span style="color: #0000ff;">SVG</span>(<span style="color: #8b2252;">"iris_plot.svg"</span>, 6inch, 4inch)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Fitting linear models</h2>
+</div>
+
+</div><div id="postamble">
+<p class="date">Date: </p>
+<p class="author">Author : G. Jay Kerns</p>
+<p class="creator">Generated by <a href="http://orgmode.org">Org</a> mode 7.9.3f in <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.50.1.</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+</div>
+</body>
+</html>

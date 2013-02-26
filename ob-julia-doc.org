@@ -1,0 +1,188 @@
+#+TITLE:    Org-mode and julia: an introduction
+#+AUTHOR:   G. Jay Kerns
+#+EMAIL:    gkerns@ysu.edu
+#+PROPERTY: exports both
+#+PROPERTY: results output
+#+PROPERTY: session *julia*
+#+PROPERTY: tangle yes
+
+* What you need to get started
+
+This document assumes you have at least a passing familiarity with Org-mode and Emacs keybindings.  
+
+#+BEGIN_SRC emacs-lisp :results silent :eval no-export
+(load "~/gitm/projects/ob-julia.el")
+(org-babel-julia-initiate-session "*julia*" nil)
+#+END_SRC
+
+** Julia
+- First install takes the longest, later updates not so bad.
+- all the dependencies
+
+** Add on packages
+
+Based on [[http://www.johnmyleswhite.com/notebook/2012/12/02/the-state-of-statistics-in-julia/][The State of Statistics in Julia]] by John Myles White.
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim", "NHST", "Clustering")
+#+END_SRC
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("RDatasets")
+#+END_SRC
+
+
+*** Winston
+
+The =Winston= package at the time of this writing appears to be the most stable and fully featured of the =julia= graphics packages, among alternatives including =Gadfly=.
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("Winston")
+#+END_SRC
+
+The Winston package has lots of dependencies and many of them must be built from source (on Ubuntu).
+
+*** Gadfly
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("Gadfly")
+#+END_SRC
+
+- packages take a lot longer to load than R
+
+
+** Org-mode
+
+We are assuming that you have a passing familiarity with org-mode, so that you likely have something like the following already in your =.emacs=
+
+#+BEGIN_SRC emacs-lisp :eval never
+(require 'org)
+#+END_SRC
+
+Another handy setting to have is
+
+#+BEGIN_SRC emacs-lisp
+(setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+In order to run this org file you will need to load the following code which .
+
+#+BEGIN_SRC emacs-lisp :results silent :eval never
+(load "~/gitm/projects/ob-julia.el")
+(org-babel-julia-initiate-session "*julia*" nil)
+#+END_SRC
+
+Or you can copy =ob-julia.el= to your =/path/to/org-mode/lisp= folder and put the following in your =.emacs=.
+
+#+BEGIN_SRC emacs-lisp :eval never
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (julia . t)))
+#+END_SRC
+
+The following lines (either here or in your =.emacs=) allow for inline image display in the Emacs buffer.
+
+#+BEGIN_SRC emacs-lisp :eval never
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+(add-hook 'org-mode-hook 'org-display-inline-images)
+#+END_SRC
+
+If you'd like to do LaTeX export then put the following in your emacs.
+
+#+BEGIN_SRC emacs-lisp :eval never
+(require 'ox-latex)
+(require 'ox-beamer)
+#+END_SRC
+
+
+
+** ESS
+
+The place to get the latest version of ESS is [[http://stat.ethz.ch/ESS/index.php?Section=download][here]].  
+
+#+BEGIN_SRC emacs-lisp :eval never
+(add-to-list 'load-path "~/path/to/ESS/lisp")
+(require 'ess-site)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :eval never
+(setq  inferior-julia-program-name "~/path/to/julia-release-basic")
+#+END_SRC
+
+* Getting started with julia
+
+#+BEGIN_SRC julia :results value
+rand(2,3)
+#+END_SRC
+
+#+BEGIN_SRC julia :results output
+print("hello")
+#+END_SRC
+
+#+BEGIN_SRC julia
+[3:50]
+x = [3:6]
+y = [5:11]
+z = [4:7]
+x + z
+ans
+sum(x)
+mean(x)
+exp(x)
+log(x)
+sort(x)
+sqrt(x)
+diff(x)
+x[3]
+y[2:4]
+typeof(x)
+1.0
+1.
+Inf
+-Inf
+NaN
+1 + 2im
+#+END_SRC
+
+* Plotting with Winston
+
+#+BEGIN_SRC julia :results graphics :file example1.png
+using Winston
+x = linspace( 0, 3pi, 100 )
+c = cos(x)
+s = sin(x)
+p = FramedPlot();
+setattr(p, "title", "title!")
+setattr(p, "xlabel", L"\Sigma x^2_i")
+setattr(p, "ylabel", L"\Theta_i")
+add(p, FillBetween(x, c, x, s) )
+add(p, Curve(x, c, "color", "red") )
+add(p, Curve(x, s, "color", "blue") )
+file(p, "example1.png")
+#+END_SRC
+
+#+RESULTS:
+[[file:example1.png]]
+
+* Plotting with Gadfly
+
+#+BEGIN_SRC julia :results graphics :file iris_plot.svg :eval never
+using RDatasets
+using Gadfly
+using Compose
+iris = data("datasets", "iris")
+p = plot(iris, {:x => "Sepal.Length", :y => "Sepal.Width"}, Geom.point);
+SVG("iris_plot.svg", 6inch, 4inch)
+#+END_SRC
+
+
+* Fitting (generalized) linear models
+
+#+BEGIN_SRC julia :eval never
+using RDatasets, DataFrames, Distributions, GLM
+trees = data("datasets", "trees");
+treeslm = lm(:(Girth ~ Height + Volume), trees);
+coef(treeslm)
+confint(treeslm)
+#+END_SRC

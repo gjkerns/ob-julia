@@ -1,0 +1,116 @@
+#+TITLE:     julia-beamer.org
+#+AUTHOR:    G. Jay Kerns
+#+EMAIL:     jay@gandalfrodo.no-ip.org
+#+DATE:      2013-02-25 Mon
+#+OPTIONS:   H:2 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+LaTeX_CLASS: beamer
+#+LaTeX_CLASS_OPTIONS: [presentation, bigger]
+#+BEAMER_THEME: default
+#+COLUMNS: %45ITEM %10BEAMER_env(Env) %10BEAMER_act(Act) %4BEAMER_col(Col) %8BEAMER_opt(Opt)
+#+PROPERTY: BEAMER_col_ALL 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.0 :ETC
+#+PROPERTY: exports both
+#+PROPERTY: results output
+#+PROPERTY: session *julia*
+#+PROPERTY: tangle yes
+
+
+* Getting started
+
+#+BEGIN_SRC emacs-lisp :results silent :eval no-export
+(load "~/gitm/projects/ob-julia.el")
+(org-babel-julia-initiate-session "*julia*" nil)
+#+END_SRC
+
+Read the following links.
+- http://orgmode.org/worg/exporters/beamer/tutorial.html
+- http://orgmode.org/worg/exporters/beamer/ox-beamer.html
+- http://orgmode.org/manual/Beamer-class-export.html#Beamer-class-export
+
+Add the following to =.emacs=
+
+#+BEGIN_SRC emacs-lisp :eval never
+(require 'ox-beamer)
+#+END_SRC
+
+You also need to add the LaTeX class.
+
+#+BEGIN_SRC emacs-lisp :eval never
+(add-to-list 'org-latex-classes
+                '("beamer"
+                  "\\documentclass[presentation]{beamer}
+\[DEFAULT-PACKAGES]
+\[PACKAGES]
+\[EXTRA]"
+                  ("\\section{%s}" . "\\section*{%s}")
+                  ("\\subsection{%s}" . "\\subsection*{%s}")
+                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+#+END_SRC
+
+** Exported title
+   :PROPERTIES:
+  :EXPORT_LaTeX_CLASS: beamer
+  :EXPORT_LaTeX_CLASS_OPTIONS: [presentation,smaller]
+  :EXPORT_BEAMER_THEME: default
+  :EXPORT_FILE_NAME: presentation.pdf
+  :END:
+- amsdk
+- kdsalk
+- adkfa
+- jlksa
+
+* This is the first structural section
+     
+** Frame 1
+#+BEAMER: \framesubtitle{with a subtitle}
+
+*** Thanks to Eric Fraga
+    :PROPERTIES:
+    :BEAMER_env: block
+    :BEAMER_envargs: C[t]
+    :BEAMER_col: 0.5
+    :END:
+	 for the first viable beamer setup in Org
+
+*** Thanks to everyone else
+    :PROPERTIES:
+    :BEAMER_col: 0.5
+    :BEAMER_env: block
+    :BEAMER_envargs: <2->
+    :END:
+	 for contributing to the discussion
+**** This will be formatted as a beamer note
+     :PROPERTIES:
+     :BEAMER_col: 0.5
+     :BEAMER_env: note
+     :BEAMER_envargs: <2->
+     :END:
+
+** Frame 2
+#+BEAMER: \framesubtitle{where we will not use columns}
+*** Request
+    Please test this stuff!
+    :PROPERTIES:
+    :BEAMER_env: block
+    :END:
+
+** Here is a graph
+#+BEGIN_SRC julia :exports results :results graphics :file example1.pdf :eval no-export
+using Winston
+x = linspace(0, 3pi, 100)
+c = cos(x)
+s = sin(x)
+p = FramedPlot();
+setattr(p, "title", "title!")
+setattr(p, "xlabel", L"\Sigma x^2_i")
+setattr(p, "ylabel", L"\Theta_i")
+add(p, FillBetween(x, c, x, s) )
+add(p, Curve(x, c, "color", "red") )
+add(p, Curve(x, s, "color", "blue") )
+file(p, "example1.pdf")
+#+END_SRC
+
+#+ATTR_LaTeX: :options "width=0.80\\textwidth"
+#+RESULTS:
+[[file:example1.pdf]]
+
