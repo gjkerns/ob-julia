@@ -1,4 +1,4 @@
-#+TITLE:    Org-mode and julia: an introduction
+#+TITLE:    julia: an introduction
 #+AUTHOR:   G. Jay Kerns
 #+EMAIL:    gkerns@ysu.edu
 #+OPTIONS:  H:2
@@ -433,14 +433,4 @@ coeftable(treeslm)
 [2,]    -0.0454835 0.0282621 -1.60935   0.118759
 [3,]       0.19518 0.0109553  17.8161 8.2233e-17
 #+end_example
-
-
-
-* Installing the stuff you need
-
-* Interactive session evaluation
-
-* Evaluation inside the Org buffer
-
-* Exporting to other formats
 
