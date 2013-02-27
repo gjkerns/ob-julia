@@ -1,30 +1,37 @@
 #+TITLE:    Org-mode and julia: an introduction
 #+AUTHOR:   G. Jay Kerns
 #+EMAIL:    gkerns@ysu.edu
+#+OPTIONS:  H:2
 #+PROPERTY: exports both
 #+PROPERTY: results output
 #+PROPERTY: session *julia*
 #+PROPERTY: tangle yes
+#+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{⋮}
+
+One of the reasons for this document is that I wanted to make it easier to get acquainted with =julia=.  
 
 * What you need to get started
 
 This document assumes you have at least a passing familiarity with Org-mode and Emacs keybindings.  
 
 #+BEGIN_SRC emacs-lisp :results silent :eval no-export
-(load "~/gitm/projects/ob-julia.el")
+(load "/path/to/ob-julia.el")
 (org-babel-julia-initiate-session "*julia*" nil)
 #+END_SRC
+
+- Note: :: a lot of the code blocks below have the header argument =:eval no-export= which means that the code block can be evaluated interactively in this session by =C-c C-c= with point in the code block but will /not/ be evaluated during export.  The reason is that those blocks have settings which conflict with my current setup but would be useful for others going through this document. 
 
 ** Julia
 - First install takes the longest, later updates not so bad.
 - all the dependencies
 
-** Add on packages
+** Add-on packages
 
 Based on [[http://www.johnmyleswhite.com/notebook/2012/12/02/the-state-of-statistics-in-julia/][The State of Statistics in Julia]] by John Myles White.
 
 #+BEGIN_SRC julia :eval never
-Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim", "NHST", "Clustering")
+Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim", 
+        "NHST", "Clustering")
 #+END_SRC
 
 #+BEGIN_SRC julia :eval never
@@ -34,7 +41,7 @@ Pkg.add("RDatasets")
 
 *** Winston
 
-The =Winston= package at the time of this writing appears to be the most stable and fully featured of the =julia= graphics packages, among alternatives including =Gadfly=.
+The most stable and fully featured of the =julia= graphics packages at the time of this writing appears to be the =Winston= package, among alternatives including =Gadfly=.
 
 #+BEGIN_SRC julia :eval never
 Pkg.add("Winston")
@@ -50,10 +57,9 @@ Pkg.add("Gadfly")
 
 - packages take a lot longer to load than R
 
-
 ** Org-mode
 
-We are assuming that you have a passing familiarity with org-mode, so that you likely have something like the following already in your =.emacs=
+This document assumes that you have at least a passing familiarity with org-mode such that you likely have something like the following already in your =.emacs=:
 
 #+BEGIN_SRC emacs-lisp :eval never
 (require 'org)
@@ -65,16 +71,17 @@ Another handy setting to have is
 (setq org-confirm-babel-evaluate nil)
 #+END_SRC
 
-In order to run this org file you will need to load the following code which .
+In order to run this org file you will need to load =ob-julia.el= at some point. One way is to edit the following code block and then =C-c C-c= with point inside the block:
 
-#+BEGIN_SRC emacs-lisp :results silent :eval never
-(load "~/gitm/projects/ob-julia.el")
+#+BEGIN_SRC emacs-lisp :results silent :eval no-export
+(load "/path/to/ob-julia.el")
 (org-babel-julia-initiate-session "*julia*" nil)
 #+END_SRC
 
-Or you can copy =ob-julia.el= to your =/path/to/org-mode/lisp= folder and put the following in your =.emacs=.
+The first command loads the =ob-julia.el= file and the second initiates a =julia= session in a buffer called =*julia*=.  An alternative method is to put the following in your =.emacs= (these should go below the =(require 'org)= line):
 
-#+BEGIN_SRC emacs-lisp :eval never
+#+BEGIN_SRC emacs-lisp :eval no-export
+(add-to-list 'load-path "/path/to/ob-julia.el")
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
@@ -83,7 +90,7 @@ Or you can copy =ob-julia.el= to your =/path/to/org-mode/lisp= folder and put th
 
 The following lines (either here or in your =.emacs=) allow for inline image display in the Emacs buffer.
 
-#+BEGIN_SRC emacs-lisp :eval never
+#+BEGIN_SRC emacs-lisp :eval no-export
 (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
 (add-hook 'org-mode-hook 'org-display-inline-images)
 #+END_SRC
@@ -95,22 +102,275 @@ If you'd like to do LaTeX export then put the following in your emacs.
 (require 'ox-beamer)
 #+END_SRC
 
-
-
-** ESS
+** ESS - Emacs Speaks Statistics
 
 The place to get the latest version of ESS is [[http://stat.ethz.ch/ESS/index.php?Section=download][here]].  
 
 #+BEGIN_SRC emacs-lisp :eval never
-(add-to-list 'load-path "~/path/to/ESS/lisp")
+(add-to-list 'load-path "/path/to/ESS/lisp")
 (require 'ess-site)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :eval never
-(setq  inferior-julia-program-name "~/path/to/julia-release-basic")
+(setq  inferior-julia-program-name "/path/to/julia-release-basic")
 #+END_SRC
 
 * Getting started with julia
+
+** Communicating with julia
+
+There are three basic methods for communicating with julia.
+
+- An Interactive session (julia>). :: This is the most basic way to complete simple, one-line commands. Do =M-x julia RET= during an Emacs session and the Emacs/ESS julia mode will open in a buffer.  Type whatever command you like; julia will evaluate what is typed there and output the results in the buffer.
+
+- Source files. :: For longer programs (called /scripts/) there is too much code to write all at once in an interactive session. Also, sometimes we only wish to modify a small piece of the script and run it again in julia. 
+
+  The way to do this is to open a dedicated julia script buffer with the sequence =C-x C-f whatever.jl=, where =whatever.jl= is a julia script which you've named whatever. Write the code in the buffer, then when satisfied the user evaluates lines or regions according to the following table. Then julia will evaluate the respective code and give output in the interactive buffer.
+ 
+  | =C-RET=   | Send region or current line and step to next line of code.  |
+  | =M-C-x=   | Send region or function or paragraph.                       |
+  | =C-c C-c= | Send region or function or paragraph and step to next line. |
+
+- Script mode. :: 
+
+** julia is one fancy calculator
+
+julia can do any arithmetic you can imagine. For example, in an interactive session type =2 + 3= and observe
+
+#+BEGIN_SRC julia
+2 + 3
+#+END_SRC
+
+The =julia>= means that julia is waiting on your next command. Entry numbers will be generated for each row, such as
+
+#+BEGIN_SRC julia
+[3:50]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+48-element Int32 Array:
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+  ⋮
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+#+end_example
+
+Notice that julia doesn't show the whole list of numbers, it elides them with vertical ellipses \(\vdots\). Note also the =[3:50]= notation, which generates all integers in sequence from 3 to 50. One can also do things like
+
+#+BEGIN_SRC julia :eval no-export
+2 * 3 * 4 * 5  # multiply
+sqrt(10)       # square root
+pi             # pi
+sqrt(-2)
+#+END_SRC
+
+#+RESULTS:
+: 120
+: 3.1622776601683795
+: 3.141592653589793
+: ERROR: DomainError()
+:  in sqrt at math.jl:111
+
+Notice that a =DomainError()= was produced; we are not allowed to take square roots of negative numbers. Also notice the number sign =#=, which is used for comments. Everything typed on the same line after the =#= will be ignored by julia. There is no julia continuation prompt.  If you press =RET= before a statement is complete then empty lines keep piling up until you finish the command. 
+
+Some other fuctions that will be of use are =abs()= for absolute value, =log()= for the natural logarithm, =exp()= for the exponential function, and =factorial()= for... uh... factorials.
+
+Assignment is useful for storing values to be used later. Notice the semicolon at the end of the first statement.  Without the semicolon, julia would print the result of the assigment (namely, =5=).  
+
+#+BEGIN_SRC julia
+y = 5;    # stores the value 5 in y
+3 + y
+#+END_SRC
+
+There aren't other assignment operators (like =<-= in R).  For variable names you can use letters. (possibly followed by) numbers, and/or underscore "_" characters. You cannot use mathematical operators, you cannot use dots, and numbers can't go in front of numbers (those are interpreted by julia as coefficients). Examples: =x=, =x1=, =y32=, =z_var=.
+
+If you would like to enter the data 74,31,95,61,76,34,23,54,96 into julia, you may create a data array with double brackets (the analogue of the =c()= function in R). 
+
+#+BEGIN_SRC julia
+fred = [74, 31, 95, 61, 76, 34, 23, 54, 96]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+9-element Int32 Array:
+ 74
+ 31
+ 95
+ 61
+ 76
+ 34
+ 23
+ 54
+ 96
+#+end_example
+
+The array =fred= has 9 entries. We can access individual components with bracket =[ ]= notation:
+
+#+BEGIN_SRC julia
+fred[3]
+fred[2:4]
+fred[[1, 3, 5, 8]]
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+95
+3-element Int32 Array:
+ 31
+ 95
+ 61
+4-element Int32 Array:
+ 74
+ 95
+ 76
+ 54
+#+end_example
+
+Notice we needed double brackets for the third example. If you would like to empty the array =fred=, you can do it by typing =fred = []=.
+
+Data arrays in julia have type. There are all sorts of integer types (=Int8=, =uInt8=, =Int32=, ...), strings (=ASCIIString=), logical (=Bool=), unicode characters (=Char=), then there are floating-point types (=Float16=, =Float32=), even complex numbers like =1 + 2im= and even rational numbers like =3//4=, not to mention =Inf=, =-Inf=, and =NaN= (which stands for /not a number/). If you ever want to know what it is you're dealing with you can find out with the =typeof= function.
+
+#+BEGIN_SRC julia
+simpsons = ["Homer", "Marge", "Bart", "Lisa", "Maggie"]
+typeof(simpsons)
+#+END_SRC
+
+#+RESULTS:
+: 5-element ASCIIString Array:
+:  "Homer" 
+:  "Marge" 
+:  "Bart"  
+:  "Lisa"  
+:  "Maggie"
+: Array{ASCIIString,1}
+
+Here is an example of a logical vector:
+
+#+BEGIN_SRC julia
+x = 5;
+x >= 6
+#+END_SRC
+
+#+RESULTS:
+: 
+: false
+
+Notice the ~>=~ symbol which stands for "greater than or equal to".  Many functions in julia are vectorized. Once we have stored a data vector then we can evaluate functions on it. 
+
+#+BEGIN_SRC julia
+sum(fred)
+length(fred)
+sum(fred)/length(fred)
+mean(fred)                 # sample mean, should be same answer
+#+END_SRC
+
+#+RESULTS:
+: 544
+: 9
+: 60.44444444444444
+: 60.44444444444444
+
+Other popular functions for vectors are =min()=, =max()=, =sort()=, and =cumsum()=.
+
+Arithmetic in julia is usually done element-wise, and the operands must be of conformable dimensions. 
+
+#+BEGIN_SRC julia
+fred2 = [4, 5, 3, 6, 4, 6, 7, 3, 1];
+fred + fred2
+fred - fred2
+fred - mean(fred)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+9-element Int32 Array:
+ 78
+ 36
+ 98
+ 67
+ 80
+ 40
+ 30
+ 57
+ 97
+9-element Int32 Array:
+ 70
+ 26
+ 92
+ 55
+ 72
+ 28
+ 16
+ 51
+ 95
+9-element Float64 Array:
+  13.5556  
+ -29.4444  
+  34.5556  
+   0.555556
+  15.5556  
+ -26.4444  
+ -37.4444  
+  -6.44444 
+  35.5556
+#+end_example
+
+The operations =+= and =-= are performed element-wise. Notice in the last vector that =mean(fred)= was subtracted from each entry in turn. This is also known as data recycling. Other popular vectorizing functions are =sin()=, =cos()=, =exp()=, =log()=, and =sqrt()=.
+
+** Getting Help
+
+When you are using julia it will not take long before you find yourself needing help. The help resources for julia are not as extensive as those for some other languages (such as R).  julia is new and many of the help topics haven't been written yet.  Nevertheless sometimes a person is lucky and you can get help on a function when it's available with the =help()= function.
+
+#+BEGIN_SRC julia
+help("factorial")
+#+END_SRC
+
+#+RESULTS:
+: Base.factorial(n)
+: 
+:    Factorial of n
+: 
+: Base.factorial(n, k)
+: 
+:    Compute "factorial(n)/factorial(k)"
+
+In addition to this, you can type =help()= which gives an extended list of help topics.  For instance, I find myself doing =help("Statistics")= a lot.
+
+Note also =example()=. This initiates the running of examples, if available, of the use of the function specified by the argument.
+
+* Other tips
+
+It is unnecessary to retype commands repeatedly, since julia remembers what you have entered on the command line. To cycle through the previous commands, just push the \uparrow (up arrow) key. 
+
+Missing values in julia are denoted by =NA=. Operations on data vector =NA= values treat them as if the values can't be found. This means adding (as well as subtracting and all of the other mathematical operations) a number to =NA= results in =NA=.
+
+To find out what all variables are in the current work environment, use the commands =ls()= or =objects()=. These list all available objects in the workspace. If you wish to remove one or more variables, use =remove(var1, var2)=, and to remove all of them use =rm(list=ls())=. 
+
+** Other resources
+
+- Check out the official julia manual [[http://docs.julialang.org/en/latest/manual/][here]].
+- The /Standard Library/ (a different type of manual) is [[http://docs.julialang.org/en/latest/stdlib/][here]].
+- There is a vibrant and growing julia community whose gateway is [[http://julialang.org/community/][here]].
+- There is a large and growing list of contributed packages [[http://docs.julialang.org/en/latest/packages/packagelist/][here]].
 
 #+BEGIN_SRC julia :results value
 rand(2,3)
@@ -120,34 +380,9 @@ rand(2,3)
 print("hello")
 #+END_SRC
 
-#+BEGIN_SRC julia
-[3:50]
-x = [3:6]
-y = [5:11]
-z = [4:7]
-x + z
-ans
-sum(x)
-mean(x)
-exp(x)
-log(x)
-sort(x)
-sqrt(x)
-diff(x)
-x[3]
-y[2:4]
-typeof(x)
-1.0
-1.
-Inf
--Inf
-NaN
-1 + 2im
-#+END_SRC
-
 * Plotting with Winston
 
-#+BEGIN_SRC julia :results graphics :file example1.png
+#+BEGIN_SRC julia :results graphics :file example1.png :eval no-export
 using Winston
 x = linspace( 0, 3pi, 100 )
 c = cos(x)
@@ -176,13 +411,26 @@ p = plot(iris, {:x => "Sepal.Length", :y => "Sepal.Width"}, Geom.point);
 SVG("iris_plot.svg", 6inch, 4inch)
 #+END_SRC
 
-
 * Fitting (generalized) linear models
 
-#+BEGIN_SRC julia :eval never
+#+BEGIN_SRC julia
 using RDatasets, DataFrames, Distributions, GLM
 trees = data("datasets", "trees");
 treeslm = lm(:(Girth ~ Height + Volume), trees);
 coef(treeslm)
-confint(treeslm)
+coeftable(treeslm)
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+3-element Float64 Array:
+ 10.8164   
+ -0.0454835
+  0.19518
+3x4 DataFrame:
+          Estimate Std.Error  t value   Pr(>|t|)
+[1,]       10.8164    1.9732  5.48165 7.44691e-6
+[2,]    -0.0454835 0.0282621 -1.60935   0.118759
+[3,]       0.19518 0.0109553  17.8161 8.2233e-17
+#+end_example
+
