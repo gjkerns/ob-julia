@@ -115,32 +115,8 @@ The place to get the latest version of ESS is [[http://stat.ethz.ch/ESS/index.ph
 (setq  inferior-julia-program-name "/path/to/julia-release-basic")
 #+END_SRC
 
-* Fitting (generalized) linear models
 
-#+BEGIN_SRC julia
-using RDatasets, DataFrames, Distributions, GLM
-trees = data("datasets", "trees");
-treeslm = lm(:(Girth ~ Height + Volume), trees);
-coef(treeslm)
-coeftable(treeslm)
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-3-element Float64 Array:
- 10.8164   
- -0.0454835
-  0.19518
-3x4 DataFrame:
-          Estimate Std.Error  t value   Pr(>|t|)
-[1,]       10.8164    1.9732  5.48165 7.44691e-6
-[2,]    -0.0454835 0.0282621 -1.60935   0.118759
-[3,]       0.19518 0.0109553  17.8161 8.2233e-17
-#+end_example
-
-
-
-* Installation prerequisites
+* Prerequisites
 
 ** Org-mode
 
@@ -160,11 +136,19 @@ This is about ESS.
 
 * Graphics
 
+The most stable and fully featured of the =julia= graphics packages at the time of this writing appears to be the =Winston= package, among alternatives including =Gadfly=.
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("Winston")
+#+END_SRC
+
+The Winston package has lots of dependencies and many of them must be built from source (on Ubuntu).
+
 ** Plotting with Winston
 
 #+BEGIN_SRC julia :results graphics :file example1.png :eval no-export
 using Winston
-x = linspace( 0, 3pi, 100 )
+x = linspace(0, 3pi, 100)
 c = cos(x)
 s = sin(x)
 p = FramedPlot();
@@ -192,7 +176,6 @@ p = plot(iris, {:x => "Sepal.Length", :y => "Sepal.Width"}, Geom.point);
 SVG("iris_plot.svg", 6inch, 4inch)
 #+END_SRC
 
-
 * Exporting to other formats
 
 ** LaTeX
@@ -208,3 +191,26 @@ SVG("iris_plot.svg", 6inch, 4inch)
 - when :results value be careful because of readcsv
   - characters
   - 1x1 matrix
+
+* Fitting (generalized) linear models
+
+#+BEGIN_SRC julia
+using RDatasets, DataFrames, Distributions, GLM
+trees = data("datasets", "trees");
+treeslm = lm(:(Girth ~ Height + Volume), trees);
+coef(treeslm)
+coeftable(treeslm)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+3-element Float64 Array:
+ 10.8164   
+ -0.0454835
+  0.19518
+3x4 DataFrame:
+          Estimate Std.Error  t value   Pr(>|t|)
+[1,]       10.8164    1.9732  5.48165 7.44691e-6
+[2,]    -0.0454835 0.0282621 -1.60935   0.118759
+[3,]       0.19518 0.0109553  17.8161 8.2233e-17
+#+end_example
