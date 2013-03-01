@@ -1,4 +1,4 @@
-#+TITLE:    julia: an introduction
+#+TITLE:    Introduction to julia
 #+AUTHOR:   G. Jay Kerns
 #+EMAIL:    gkerns@ysu.edu
 #+OPTIONS:  H:2
