@@ -12,7 +12,33 @@
 #+PROPERTY: session *julia*
 
 * A Sample =julia= Beamer presentation
-     
+  
+** Frame 0							:B_fullframe:
+   :PROPERTIES:
+   :BEAMER_env: fullframe
+   :END:
+For this to successfully export to PDF you'll need
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(require 'ox-beamer)
+#+END_SRC
+
+and you'll need a Beamer entry similar to this
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(add-to-list 'org-latex-classes
+	     '("beamer"
+        "\\documentclass[presentation]{beamer}
+        \[DEFAULT-PACKAGES]
+        \[PACKAGES]
+        \[EXTRA]"
+	       ("\\section{%s}" . "\\section*{%s}")
+	       ("\\subsection{%s}" . "\\subsection*{%s}")
+	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+#+END_SRC
+
+in your =.emacs=. Then open the org file and do: =C-c C-e l P=.
+
 ** Frame 1
 #+BEAMER: \framesubtitle{Two blocks with a pause in between, noweb reference}
 *** Here is some =julia= code 				      :BMCOL:B_block:

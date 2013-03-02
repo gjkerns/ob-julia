@@ -223,33 +223,10 @@ Then also add an entry for the beamer class in your =.emacs=.  Here is a boilerp
 	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
 #+END_SRC
 
-Since beamer is such a special case I have tweaked a minimal =julia= beamer presentation in [[file:ob-julia-beamer.org][A julia beamer example]].  See there, see the Org manual, and see Worg too for more information.
+Since beamer is such a special case I have tweaked a minimal =julia= beamer presentation in [[file:ob-julia-beamer.org][Sample =julia= Presentation]]. See there, see the Org manual, and see Worg too for more information.
 
 * Other things
 
 - You can extract all of the =julia= source code (also known as /tangling/ the Org document) with the keystrokes =C-c C-v t=.  This will generate a =julia= script (with extension =.jl=) in the working directory.  Note that this capability is turned off by default.  You can activate it by adding the header argument =:tangle yes= to those code blocks you'd like to tangle or doing a buffer-wide header setting with the line =#+PROPERTY: tangle yes= near the top of the org file.  See the Org manual for details.
 - You may have noticed that those =julia= code lines with no output (for instance, lines with semicolons =;= at the end) generate an empty line in the =#+RESULTS= below the code block.  Consequently, the first time you evaluate a =julia= code block without having previously initiated a =julia= session with =M-x julia= the =#+RESULTS= will have an extra mystery empty line.  It is no mystery.  The first statement executed by ESS when loading =julia= is an =include= command.  That command has no output.  If that empty line bothers you then execute the code block again; the mystery empty line will disappear. 
 - Be careful when executing code blocks with =:results value=.  Code block evaluation in that case works by writing the =julia= commands to an external file in the =/tmp= directory, evaluating the commands with =julia=, writing the results to a comma-separated (=.csv=) file, then reading the =.csv= file and converting the result to =elisp= for insertion to the org buffer.  Not all object types are supported by =julia= for writing to =.csv= files, in particular, =1x1= matrices and arrays of ASCII characters are not supported (yet).  If you try to evaluate code blocks in those cases (or any other case where output to =.csv= is not supported) then you will get an error.
-    
-* Fitting (generalized) linear models
-
-#+BEGIN_SRC julia
-using RDatasets, DataFrames, Distributions, GLM
-trees = data("datasets", "trees");
-treeslm = lm(:(Girth ~ Height + Volume), trees);
-coef(treeslm)
-coeftable(treeslm)
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-3-element Float64 Array:
- 10.8164   
- -0.0454835
-  0.19518
-3x4 DataFrame:
-          Estimate Std.Error  t value   Pr(>|t|)
-[1,]       10.8164    1.9732  5.48165 7.44691e-6
-[2,]    -0.0454835 0.0282621 -1.60935   0.118759
-[3,]       0.19518 0.0109553  17.8161 8.2233e-17
-#+end_example

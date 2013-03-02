@@ -1,4 +1,4 @@
-% Created 2013-03-02 Sat 16:43
+% Created 2013-03-02 Sat 17:25
 \documentclass[presentation]{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -36,7 +36,30 @@
 \section[A Sample \texttt{julia} Beamer presentation]{A Sample \texttt{julia} Beamer presentation}
 \label{sec-1}
 
-\begin{frame}[fragile,label=sec-1-1]{Frame 1}
+\begin{frame}[fragile,label=sec-1-1]{}
+ For this to successfully export to PDF you'll need
+
+\begin{verbatim}
+(require 'ox-beamer)
+\end{verbatim}
+
+and you'll need a Beamer entry similar to this
+
+\begin{verbatim}
+(add-to-list 'org-latex-classes
+	     '("beamer"
+        "\\documentclass[presentation]{beamer}
+        \[DEFAULT-PACKAGES]
+        \[PACKAGES]
+        \[EXTRA]"
+	       ("\\section{%s}" . "\\section*{%s}")
+	       ("\\subsection{%s}" . "\\subsection*{%s}")
+	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+\end{verbatim}
+
+in your \texttt{.emacs}. Then open the org file and do: \texttt{C-c C-e l P}.
+\end{frame}
+\begin{frame}[fragile,label=sec-1-2]{Frame 1}
  \framesubtitle{Two blocks with a pause in between, noweb reference}
 \begin{columns}
 \begin{column}{0.5\textwidth}
@@ -56,8 +79,6 @@ sqrt(5)
 \begin{block}{Here is the output}
 
 \begin{verbatim}
-
-
 5
 hello, there!
 2.23606797749979
@@ -68,7 +89,7 @@ hello, there!
 \note{This is a beamer note
 This subtree will not appear in the PDF. Notice the noweb call \texttt{<<simple-code>>} which is replaced by the named \texttt{simple-code} src block above (so we don't have to type the same code twice).  It is activated by the \texttt{:noweb yes} header argument. You will notice those headline tags, such as \texttt{:BMCOl:B\_block:} and \texttt{:B\_note:}.  Don't fret about those; they are just a visual aid.}
 \end{frame}
-\begin{frame}[fragile,label=sec-1-2]{Frame 2}
+\begin{frame}[fragile,label=sec-1-3]{Frame 2}
  \framesubtitle{Horizontal block, text (list) animations, footnotes, hyperlinks}
 
 \begin{block}{This block extends horizontally}
@@ -87,7 +108,7 @@ at the top of the org file to ensure \texttt{julia} code block session evalation
 \item Set \texttt{ignoreheading} with \texttt{C-c C-b i} on headline
 \end{itemize}
 \end{frame}
-\begin{frame}[fragile,label=sec-1-3]{Frame 3}
+\begin{frame}[fragile,label=sec-1-4]{Frame 3}
  \framesubtitle{Images and captions, font tweaks for source code}
 
 \begin{columns}
@@ -126,7 +147,7 @@ file(p, "example1.pdf")
 \end{column}
 \end{columns}
 \end{frame}
-\begin{frame}[allowframebreaks,label=sec-1-4]{References}
+\begin{frame}[allowframebreaks,label=sec-1-5]{References}
 \framesubtitle{Write this one in pure LaTeX and \texttt{allowframebreaks}}
 
 \begin{thebibliography}{10}    
