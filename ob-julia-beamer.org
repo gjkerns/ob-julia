@@ -1,101 +1,88 @@
-#+TITLE:     julia-beamer.org
-#+AUTHOR:    G. Jay Kerns
-#+EMAIL:     jay@gandalfrodo.no-ip.org
-#+DATE:      2013-02-25 Mon
-#+OPTIONS:   H:2 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+STARTUP: beamer
+#+TITLE: Sample =julia= Presentation
+#+AUTHOR: G. Jay Kerns
 #+LaTeX_CLASS: beamer
-#+LaTeX_CLASS_OPTIONS: [presentation, bigger]
+#+LaTeX_CLASS_OPTIONS: [presentation]
+#+OPTIONS: H:2
 #+BEAMER_THEME: default
+#+BEAMER_COLOR_THEME: beaver
+#+BEAMER_HEADER: \institute{The Really Great Institute \\ Somewhere On, Earth}
 #+COLUMNS: %45ITEM %10BEAMER_env(Env) %10BEAMER_act(Act) %4BEAMER_col(Col) %8BEAMER_opt(Opt)
 #+PROPERTY: BEAMER_col_ALL 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.0 :ETC
-#+PROPERTY: exports both
-#+PROPERTY: results output
 #+PROPERTY: session *julia*
-#+PROPERTY: tangle yes
 
-
-* Getting started
-
-#+BEGIN_SRC emacs-lisp :results silent :eval no-export
-(load "~/gitm/projects/ob-julia.el")
-(org-babel-julia-initiate-session "*julia*" nil)
-#+END_SRC
-
-Read the following links.
-- http://orgmode.org/worg/exporters/beamer/tutorial.html
-- http://orgmode.org/worg/exporters/beamer/ox-beamer.html
-- http://orgmode.org/manual/Beamer-class-export.html#Beamer-class-export
-
-Add the following to =.emacs=
-
-#+BEGIN_SRC emacs-lisp :eval never
-(require 'ox-beamer)
-#+END_SRC
-
-You also need to add the LaTeX class.
-
-#+BEGIN_SRC emacs-lisp :eval never
-(add-to-list 'org-latex-classes
-                '("beamer"
-                  "\\documentclass[presentation]{beamer}
-\[DEFAULT-PACKAGES]
-\[PACKAGES]
-\[EXTRA]"
-                  ("\\section{%s}" . "\\section*{%s}")
-                  ("\\subsection{%s}" . "\\subsection*{%s}")
-                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
-#+END_SRC
-
-** Exported title
-   :PROPERTIES:
-  :EXPORT_LaTeX_CLASS: beamer
-  :EXPORT_LaTeX_CLASS_OPTIONS: [presentation,smaller]
-  :EXPORT_BEAMER_THEME: default
-  :EXPORT_FILE_NAME: presentation.pdf
-  :END:
-- amsdk
-- kdsalk
-- adkfa
-- jlksa
-
-* This is the first structural section
+* A Sample =julia= Beamer presentation
      
 ** Frame 1
-#+BEAMER: \framesubtitle{with a subtitle}
-
-*** Thanks to Eric Fraga
+#+BEAMER: \framesubtitle{Two blocks with a pause in between, noweb reference}
+*** Here is some =julia= code 				      :BMCOL:B_block:
     :PROPERTIES:
     :BEAMER_env: block
     :BEAMER_envargs: C[t]
     :BEAMER_col: 0.5
     :END:
-	 for the first viable beamer setup in Org
 
-*** Thanks to everyone else
+#+NAME: simple-code
+#+BEGIN_SRC julia :exports code :eval never
+2+3
+print("hello, there!")
+sqrt(5)
+#+END_SRC
+
+\pause
+
+*** Here is the output 					      :BMCOL:B_block:
     :PROPERTIES:
     :BEAMER_col: 0.5
     :BEAMER_env: block
     :BEAMER_envargs: <2->
     :END:
-	 for contributing to the discussion
-**** This will be formatted as a beamer note
-     :PROPERTIES:
-     :BEAMER_col: 0.5
-     :BEAMER_env: note
-     :BEAMER_envargs: <2->
-     :END:
+
+#+BEGIN_SRC julia :exports results :results output :noweb yes
+<<simple-code>>
+#+END_SRC
+
+*** This is a beamer note					     :B_note:
+    :PROPERTIES:
+    :BEAMER_env: note
+    :END:
+This subtree will not appear in the PDF. Notice the noweb call =<<simple-code>>= which is replaced by the named =simple-code= src block above (so we don't have to type the same code twice).  It is activated by the =:noweb yes= header argument. You will notice those headline tags, such as =:BMCOl:B_block:= and =:B_note:=.  Don't fret about those; they are just a visual aid.
 
 ** Frame 2
-#+BEAMER: \framesubtitle{where we will not use columns}
-*** Request
-    Please test this stuff!
+#+BEAMER: \framesubtitle{Horizontal block, text (list) animations, footnotes, hyperlinks}
+
+*** This block extends horizontally
+Be sure to put 
+
+: #+PROPERTY: session *julia*
+
+at the top of the org file to ensure =julia= code block session evalation by default.
+
+*** This block heading text is ignored			    :B_ignoreheading:
+    :PROPERTIES:
+    :BEAMER_env: ignoreheading
+    :END:
+#+ATTR_BEAMER: :options <+->
+- Enter Column View[fn:1] with =C-c C-x C-c= on headline
+- Might like =S-TAB= to collapse headlines first
+- Handy for editing headline properties
+- Set =ignoreheading= with =C-c C-b i= on headline
+
+[fn:1] See [[http://thread.gmane.org/gmane.emacs.orgmode/5107/focus=5134][this message]] on Gmane for more about Column View.
+
+** Frame 3
+#+BEAMER: \framesubtitle{Images and captions, font tweaks for source code}
+
+*** The =julia= code 					      :B_block:BMCOL:
     :PROPERTIES:
     :BEAMER_env: block
+    :BEAMER_envargs: [T]
+    :BEAMER_col: 0.6
     :END:
 
-** Here is a graph
-#+BEGIN_SRC julia :exports results :results graphics :file example1.pdf :eval no-export
+\footnotesize
+
+#+BEGIN_SRC julia :exports code :results graphics :file example1.pdf :eval no-export
 using Winston
 x = linspace(0, 3pi, 100)
 c = cos(x)
@@ -110,7 +97,42 @@ add(p, Curve(x, s, "color", "blue") )
 file(p, "example1.pdf")
 #+END_SRC
 
-#+ATTR_LaTeX: :options "width=0.80\\textwidth"
-#+RESULTS:
+\normalsize
+
+*** The image 						      :B_block:BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.4
+    :BEAMER_env: block
+    :END:
+
+#+CAPTION: A =julia= graph
 [[file:example1.pdf]]
 
+** References
+#+BEAMER: \framesubtitle{Write this one in pure LaTeX and \texttt{allowframebreaks}}
+   :PROPERTIES:
+   :BEAMER_opt: allowframebreaks
+   :END:
+
+#+BEGIN_LaTeX
+\begin{thebibliography}{10}    
+\beamertemplatearticlebibitems
+\bibitem{Guy2013}
+  R. Smart Guy.
+  \newblock This theorem is hard to prove.
+  \newblock {\em Journal of Difficult Things}, 5(7):91--97, 2013.
+\beamertemplatebookbibitems
+\bibitem{Important2012}
+  Somebody R. Important.
+  \newblock {\em A Heavy Book}.
+  \newblock Bigtime-Publisher, 2012.
+\beamertemplatearrowbibitems
+\bibitem{beamerexport}
+  Beamer Class Export.
+  \newblock The Org Manual.
+  \newblock \url{http://orgmode.org/manual/Beamer-class-export.html}
+\bibitem{beameroldengine}
+  Writing Beamer presentations in org-mode.
+  \newblock The link is on Worg \href{http://orgmode.org/worg/exporters/beamer/tutorial.html}{\emph{here}}. Also see \href{http://orgmode.org/worg/exporters/beamer/ox-beamer.html}{\emph{here}} for info regarding the new exporter.
+\end{thebibliography}
+#+END_LaTeX
