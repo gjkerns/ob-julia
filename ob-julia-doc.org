@@ -8,21 +8,21 @@
 #+PROPERTY: tangle yes
 #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
 
+\newpage
+
 This document is an introduction to Org-mode + =julia=. The only
 prerequisites are a passing familiarity with Org-mode and Emacs
 keybindings.
 
-\newpage
-
 * What you need to get started
 
-- *Note:* several code blocks below have the header argument =:eval
+*Note:* several code blocks below have the header argument =:eval
   no-export=.  This means that the code block can be evaluated
-  interactively by =C-c C-c= with point in the code block but will
-  /not/ be evaluated during export.  That header argument is present
-  because those blocks have settings which conflict with my current
-  setup (or are otherwise redundant) yet are meant to be useful for
-  other people working through this document.
+  interactively by =C-c C-c= with point in the block but will /not/ be
+  evaluated during export.  That header argument is present because
+  those blocks have settings which conflict with my current setup (or
+  are otherwise redundant) yet are meant to be useful for other
+  people.
 
 ** Julia
 
@@ -76,17 +76,23 @@ blog post are (already) a bit out-of-date; the currently recommended
 way to install the packages is to launch an interactive =julia=
 session and execute the following command:
 
-#+BEGIN_SRC julia :eval no-export
+#+BEGIN_SRC julia :eval never
 Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim", 
         "NHST", "Clustering")
 #+END_SRC
 
-As John notes, the =RDatasets= package takes a lot longer to download
-than the others.  Perhaps it would be wise to install it separately.
+I recommend you *not* execute the =Pkg.add= command here (if you do it
+in this buffer then you can't watch the download and install as it is
+happening).  As John notes, the =RDatasets= package takes a lot longer
+to download than the others.  Perhaps it would be wise to install it
+separately.
 
-#+BEGIN_SRC julia :eval no-export
+#+BEGIN_SRC julia :eval never
 Pkg.add("RDatasets")
 #+END_SRC
+
+You will notice both =Pkg.add= code blocks have the =:eval never=
+header argument.
 
 ** Org-mode
 
@@ -150,9 +156,8 @@ The most stable and fully featured of the =julia= graphics packages at
 the time of this writing appears to be the [[https://github.com/nolta/Winston.jl][Winston package]], although
 the [[https://github.com/dcjones/Gadfly.jl][Gadfly package]] is also available and appears promising.  To
 install the Winston package execute the following in an interactive
-session.  I recommend you *not* execute this here (if you do it in
-this buffer then you can't watch the download and install as it is
-happening).
+session.  As above I recommend you *not* execute this here (hence the
+=:eval never= header argument).
 
 #+BEGIN_SRC julia :eval never
 Pkg.add("Winston")
@@ -370,5 +375,6 @@ Org manual, and see Worg too for more information.
 
   : #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
 
-- =ob-julia.el= does not support =rownames= and =colnames= like =ob-R.el= does.
+- =ob-julia.el= does not support =rownames= and =colnames= like
+  =ob-R.el= does.
 

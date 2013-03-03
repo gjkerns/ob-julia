@@ -1,6 +1,6 @@
 ;;; ob-julia.el --- org-babel functions for julia code evaluation
 
-;; Copyright (C) 2013 G. Jay Kerns
+;; Copyright (C) 2013
 ;; Author: G. Jay Kerns, based on ob-R.el by Eric Schulte and Dan Davison
 
 ;; Org-Babel support for evaluating julia code
@@ -240,12 +240,6 @@ last statement in BODY, as elisp."
        (org-babel-comint-eval-invisibly-and-wait-for-file
 	session tmp-file
 	(format org-babel-julia-write-object-command
-;; don't need row or column names for julia
-;; only need filename and object name
-;		(if row-names-p "TRUE" "FALSE")
-;		(if column-names-p
-;		    (if row-names-p "NA" "TRUE")
-;		  "FALSE")
 		(org-babel-process-file-name tmp-file 'noquote) "ans"))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params

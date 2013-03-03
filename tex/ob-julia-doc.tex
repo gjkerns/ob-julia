@@ -1,4 +1,4 @@
-% Created 2013-03-02 Sat 18:42
+% Created 2013-03-02 Sat 21:15
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -28,25 +28,22 @@
 \maketitle
 \tableofcontents
 
+\newpage
+
 This document is an introduction to Org-mode + \texttt{julia}. The only
 prerequisites are a passing familiarity with Org-mode and Emacs
 keybindings.
 
-\newpage
-
 \section[What you need to get started]{What you need to get started}
 \label{sec-1}
 
-\begin{description}
-\item[Note:] a lot of the code blocks below have the header argument
-\texttt{:eval no-export}.  This means that the code block can be
-evaluated interactively by \texttt{C-c C-c} with point in the code
-block but will \emph{not} be evaluated during export.  That
-header argument is present because those blocks have
-settings which conflict with my current setup (or are
-otherwise redundant) yet are meant to be useful for other
-people working through this document.
-\end{description}
+\textbf{Note:} several code blocks below have the header argument \texttt{:eval
+  no-export}.  This means that the code block can be evaluated
+  interactively by \texttt{C-c C-c} with point in the block but will \emph{not} be
+  evaluated during export.  That header argument is present because
+  those blocks have settings which conflict with my current setup (or
+  are otherwise redundant) yet are meant to be useful for other
+  people.
 
 \subsection[Julia]{Julia}
 \label{sec-1-1}
@@ -108,12 +105,18 @@ Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim",
         "NHST", "Clustering")
 \end{verbatim}
 
-As John notes, the \texttt{RDatasets} package takes a lot longer to download
-than the others.  Perhaps it would be wise to install it separately.
+I recommend you \textbf{not} execute the \texttt{Pkg.add} command here (if you do it
+in this buffer then you can't watch the download and install as it is
+happening).  As John notes, the \texttt{RDatasets} package takes a lot longer
+to download than the others.  Perhaps it would be wise to install it
+separately.
 
 \begin{verbatim}
 Pkg.add("RDatasets")
 \end{verbatim}
+
+You will notice both \texttt{Pkg.add} code blocks have the \texttt{:eval never}
+header argument.
 \subsection[Org-mode]{Org-mode}
 \label{sec-1-4}
 
@@ -179,9 +182,8 @@ The most stable and fully featured of the \texttt{julia} graphics packages at
 the time of this writing appears to be the \href{https://github.com/nolta/Winston.jl}{Winston package}, although
 the \href{https://github.com/dcjones/Gadfly.jl}{Gadfly package} is also available and appears promising.  To
 install the Winston package execute the following in an interactive
-session.  I recommend you \textbf{not} execute this here (if you do it in
-this buffer then you can't watch the download and install as it is
-happening).
+session.  As above I recommend you \textbf{not} execute this here (hence the
+\texttt{:eval never} header argument).
 
 \begin{verbatim}
 Pkg.add("Winston")
@@ -222,7 +224,7 @@ add(p, Curve(x, s, "color", "blue") )
 \end{verbatim}
 
 We did \texttt{:results silent} to omit the lengthy output from being
-inserted in the org buffer.  So the hard part is finished -- we've
+inserted in the org buffer. So the hard part is finished -- we've
 created a plot object \texttt{p} which is now available to manipulate.
 
 To launch a plot window and look at the graph right now evaluate the
@@ -364,6 +366,17 @@ code blocks you'd like to tangle or doing a buffer-wide header
 setting with the line \texttt{\#+PROPERTY: tangle yes} near the top of the
 org file.  See the Org manual for details.
 
+\item At the time of this writing \texttt{ob-julia.el} only supports \texttt{:session}
+evaluation and does not support external process evaluation. This
+means that every \texttt{SRC julia} block should have a \texttt{:session
+  SOMETHING} header argument.  Alternatively, you can put a
+buffer-wide header argument at the top of the org file, something
+like this:
+
+\begin{verbatim}
+#+PROPERTY: session *julia*
+\end{verbatim}
+
 \item You may have noticed that those \texttt{julia} code lines with no output
 (for instance, lines with semicolons \texttt{;} at the end) generate an
 empty line in the \texttt{\#+RESULTS} below the code block.  Consequently,
@@ -391,15 +404,18 @@ get an error.
 instead of printing long arrays it will elide them with vertical
 dots in the middle of the output which look similar to this \(
   \vdots \) in the buffer.  It turns out that \LaTeX{} does not like
-those three dots because it corresponds to a special character, and
+those three dots because they correspond to a special character, and
 the upshot is that your org file will not export to \LaTeX{}
 successfully.  One way around this is to explicitly declare that
-special symbol in the \LaTeX{} header.  That is the reason for the
+special symbol in the \LaTeX{} header. That is the reason for the
 following line at the top of this org file.
 
 \begin{verbatim}
 #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
 \end{verbatim}
+
+\item \texttt{ob-julia.el} does not support \texttt{rownames} and \texttt{colnames} like
+  \texttt{ob-R.el} does.
 \end{itemize}
 % Generated by Org mode 7.9.3f in Emacs 24.3.50.1.
 \end{document}

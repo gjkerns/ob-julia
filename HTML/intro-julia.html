@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Introduction to <code>julia</code></title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="Introduction to <code>julia</code>"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="author" content="G. Jay Kerns"/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Introduction to <code>julia</code></h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. What you need to get started</a></li>
+<li><a href="#sec-2">2. Getting started with julia</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Communicating with julia</a></li>
+<li><a href="#sec-2-2">2.2. <code>julia</code> is one fancy calculator</a></li>
+<li><a href="#sec-2-3">2.3. Getting Help</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Other tips</a>
+<ul>
+<li><a href="#sec-3-1">3.1. Other resources</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">4. Plotting with Winston</a></li>
+<li><a href="#sec-5">5. Fitting (generalized) linear models</a></li>
+</ul>
+</div>
+</div>
+<p>
+\vspace{0.25in}
+</p>
+
+<p>
+This document is a <i>brief</i> introduction to <code>julia</code>. It is a reworked
+<i>Brief Introduction to R</i> (which is an abbreviated Chapter 2 of <a href="http:ipsur.org" >IPSUR</a>)
+which I usually distribute to students using R for the first time.
+One of the reasons for this document is that I wanted to get better
+acquainted with <code>julia</code> and thought it might make it easier for others
+to get better acquainted with it, too. In what follows, we assume you
+have at least a passing familiarity with Org-mode and Emacs
+keybindings.
+</p>
+
+<p>
+Please bear in mind that the discussion below is written as if a
+person has launched <code>julia</code> with <code>M-x julia</code> and is sitting in front
+of an ESS <code>julia</code> interactive session right now.  But that isn't
+required.  In fact, one of the best things about Org-mode is that such
+a thing in fact <b>is not</b> required, and a person can happily breeze
+through an org file tapping <code>C-c C-c</code> as (s)he goes.  For the purpose
+of this introductory document it doesn't matter which approach you
+use; be warned, however, that some of the lower code blocks depend on
+values from the upper code blocks and if you try to execute them out
+of order then you will get an error.
+</p>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> What you need to get started</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+You will need to install <a href="http://julialang.org" ><code>julia</code></a>, a recent version of <a href="http://ess.r-project.org" >ESS</a>, and an
+updated version of <a href="http://orgmode.org" >Org-mode</a>.  Instructions for how to accomplish all
+three tasks are detailed in <a href="ob-julia-doc.html" >Org-mode and <code>julia</code>: an introduction</a>.
+Please read that document first to get up to speed before continuing.
+</p>
+
+<p>
+<b>Note:</b> several code blocks below have the header argument <code>:eval
+  no-export</code> which means that the code block can be evaluated
+  interactively in this session by <code>C-c C-c</code> with point in the code
+  block but will <i>not</i> be evaluated during export.  The reason is that
+  those blocks have settings which conflict with my current setup yet
+  are meant to be useful for others people.
+</p>
+</div>
+</div>
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Getting started with julia</h2>
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Communicating with julia</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+There are three basic methods (provided by ESS) for communicating with
+<code>julia</code>.
+</p>
+
+<ul class="org-ul">
+<li><b>An Interactive session (julia&gt;).</b> This is the most basic way to
+complete simple, one-line commands. Do <code>M-x julia RET</code> during an
+Emacs session and the Emacs/ESS <code>julia</code> mode will open in a buffer.
+Type whatever command you like; <code>julia</code> will evaluate what is typed
+there and output the results in the buffer.  This method is akin to
+launching <code>julia</code> in a terminal.
+</li>
+
+<li><b>Source files.</b> For longer programs (called <i>scripts</i>) there is too
+much code to write all at once in an interactive session. Further,
+sometimes we only wish to modify a small piece of the script and
+before running it again in <code>julia</code>.
+
+<p>
+The way to do this is to open a dedicated <code>julia</code> script buffer with
+the sequence <code>C-x C-f whatever.jl</code>, where <code>whatever.jl</code> is a <code>julia</code>
+script which you've named whatever. Write the code in the buffer,
+then when satisfied the user evaluates lines or regions according to
+the following table. Then <code>julia</code> will evaluate the respective code
+and give output in the interactive buffer.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col class="left"/>
+
+<col class="left"/>
+</colgroup>
+<tbody>
+<tr>
+<td class="left"><code>C-RET</code></td>
+<td class="left">Send region or current line and step to next line of code.</td>
+</tr>
+
+<tr>
+<td class="left"><code>M-C-x</code></td>
+<td class="left">Send region or function or paragraph.</td>
+</tr>
+
+<tr>
+<td class="left"><code>C-c C-c</code></td>
+<td class="left">Send region or function or paragraph and step to next line.</td>
+</tr>
+</tbody>
+</table>
+</li>
+
+<li><b>Script mode.</b> It is also possible to write a <code>julia</code> script (say, <code>myscript.jl</code> and evaluate the script from a terminal like this:
+
+<pre class="example">
+~$ julia myscript.jl
+</pre>
+
+<p>
+Depending on what's in the script, <code>julia</code> can be instructed to do
+all sorts of things.  See <code>julia --help</code> for additional
+options. (Note: you will need to add <code>julia</code> to your <code>PATH</code> or
+otherwise execute <code>julia</code> from its location before proceeding with
+this method.)
+</p>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> <code>julia</code> is one fancy calculator</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+<code>julia</code> can do any arithmetic you can imagine. For example, in an
+interactive session type <code>2 + 3</code> and observe
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 + 3
+</pre>
+</div>
+
+<pre class="example">
+
+5
+</pre>
+
+<p>
+The <code>julia></code> means that <code>julia</code> is waiting on your next command. Entry
+numbers will be generated for each row, such as
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">[3:50]
+</pre>
+</div>
+
+<pre class="example">
+48-element Int32 Array:
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+  ⋮
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+</pre>
+
+<p>
+Notice that <code>julia</code> doesn't show the whole list of numbers, it elides
+them with vertical ellipses \(\vdots\). Note also the <code>[3:50]</code>
+notation, which generates all integers in sequence from 3 to 50. One
+can also do things like
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 * 3 * 4 * 5  <span style="color: #b22222;"># </span><span style="color: #b22222;">multiply</span>
+<span style="color: #0000ff;">sqrt</span>(10)       <span style="color: #b22222;"># </span><span style="color: #b22222;">square root</span>
+pi             <span style="color: #b22222;"># </span><span style="color: #b22222;">pi</span>
+<span style="color: #0000ff;">sqrt</span>(-2)
+</pre>
+</div>
+
+<pre class="example">
+120
+3.1622776601683795
+3.141592653589793
+ERROR: DomainError()
+ in sqrt at math.jl:111
+</pre>
+
+<p>
+Notice that a <code>DomainError()</code> was produced; we are not allowed to take
+square roots of negative numbers. Also notice the number sign <code>#</code>,
+which is used for comments. Everything typed on the same line after
+the <code>#</code> will be ignored by julia. There is no <code>julia</code> continuation
+prompt. If you press <code>RET</code> before a statement is complete then empty
+lines keep piling up until you finish the command.
+</p>
+
+<p>
+Some other fuctions that will be of use are <code>abs()</code> for absolute
+value, <code>log()</code> for the natural logarithm, <code>exp()</code> for the exponential
+function, and <code>factorial()</code> for&hellip; uh&hellip; factorials.
+</p>
+
+<p>
+Assignment is useful for storing values to be used later. Notice the
+semicolon at the end of the first statement.  Without the semicolon,
+<code>julia</code> would print the result of the assigment (namely, <code>5</code>).
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">y = 5;    <span style="color: #b22222;"># </span><span style="color: #b22222;">stores the value 5 in y</span>
+3 + y
+</pre>
+</div>
+
+<pre class="example">
+8
+</pre>
+
+<p>
+There aren't other assignment operators (like <code><-</code> in R).  For
+variable names you can use letters (perhaps followed by) numbers,
+and/or underscore "_" characters. You cannot use mathematical
+operators, you cannot use dots, and numbers can't go in front of
+numbers (those are interpreted by <code>julia</code> as coefficients). Here are
+some valid variable names: <code>x</code>, <code>x1</code>, <code>y32</code>, <code>z_var</code>.
+</p>
+
+<p>
+If you would like to enter the data 74,31,95,61,76,34,23,54,96 into
+<code>julia</code>, you may create a data array with double brackets (the analogue
+of the <code>c()</code> function in R).
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">fred = [74, 31, 95, 61, 76, 34, 23, 54, 96]
+</pre>
+</div>
+
+<pre class="example">
+9-element Int32 Array:
+ 74
+ 31
+ 95
+ 61
+ 76
+ 34
+ 23
+ 54
+ 96
+</pre>
+
+<p>
+The array <code>fred</code> has 9 entries. We can access individual components
+with bracket <code>[ ]</code> notation:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">fred[3]
+fred[2:4]
+fred[[1, 3, 5, 8]]
+</pre>
+</div>
+
+<pre class="example">
+95
+3-element Int32 Array:
+ 31
+ 95
+ 61
+4-element Int32 Array:
+ 74
+ 95
+ 76
+ 54
+</pre>
+
+<p>
+Notice we needed double brackets for the third example. If you would
+like to empty the array <code>fred</code>, you can do it by typing <code>fred = []</code>.
+</p>
+
+<p>
+Data arrays in <code>julia</code> have type. There are all sorts of integer types
+(<code>Int8</code>, <code>uInt8</code>, <code>Int32</code>, &hellip;), strings (<code>ASCIIString</code>), logical
+(<code>Bool</code>), unicode characters (<code>Char</code>), then there are floating-point
+types (<code>Float16</code>, <code>Float32</code>), even complex numbers like <code>1 + 2im</code> and
+even rational numbers like <code>3//4</code>, not to mention <code>Inf</code>, <code>-Inf</code>, and
+<code>NaN</code> (which stands for <i>not a number</i>). If you ever want to know what
+it is you're dealing with you can find out with the <code>typeof</code> function.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">simpsons = [<span style="color: #8b2252;">"Homer"</span>, <span style="color: #8b2252;">"Marge"</span>, <span style="color: #8b2252;">"Bart"</span>, <span style="color: #8b2252;">"Lisa"</span>, <span style="color: #8b2252;">"Maggie"</span>];
+<span style="color: #0000ff;">typeof</span>(simpsons)
+</pre>
+</div>
+
+<pre class="example">
+Array{ASCIIString,1}
+</pre>
+
+<p>
+Here is an example of a logical vector:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">x = 5;
+x &gt;= 6
+</pre>
+</div>
+
+<pre class="example">
+false
+</pre>
+
+<p>
+Notice the <code>>=</code> symbol which stands for "greater than or equal to".
+Many functions in <code>julia</code> are vectorized. Once we have stored a data
+vector then we can evaluate functions on it.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">sum</span>(fred)
+<span style="color: #0000ff;">length</span>(fred)
+<span style="color: #0000ff;">sum</span>(fred)/<span style="color: #0000ff;">length</span>(fred)
+<span style="color: #0000ff;">mean</span>(fred)   <span style="color: #b22222;"># </span><span style="color: #b22222;">sample mean, should be same answer</span>
+</pre>
+</div>
+
+<pre class="example">
+544
+9
+60.44444444444444
+60.44444444444444
+</pre>
+
+<p>
+Other popular functions for vectors are <code>min()</code>, <code>max()</code>, <code>sort()</code>,
+and <code>cumsum()</code>.
+</p>
+
+<p>
+Arithmetic in <code>julia</code> is usually done element-wise, and the operands
+(usually) must be of conformable dimensions.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">mary = [4, 5, 3, 6, 4, 6, 7, 3, 1];
+fred + mary
+fred - <span style="color: #0000ff;">mean</span>(mary)
+</pre>
+</div>
+
+<pre class="example">
+9-element Int32 Array:
+ 78
+ 36
+ 98
+ 67
+ 80
+ 40
+ 30
+ 57
+ 97
+9-element Float64 Array:
+ 69.6667
+ 26.6667
+ 90.6667
+ 56.6667
+ 71.6667
+ 29.6667
+ 18.6667
+ 49.6667
+ 91.6667
+</pre>
+
+<p>
+The operations <code>+</code> and <code>-</code> are performed element-wise. Notice in the
+last vector that <code>mean(fred)</code> was subtracted from each entry in
+turn. This is also known as data recycling. Other popular vectorizing
+functions are <code>sin()</code>, <code>cos()</code>, <code>exp()</code>, <code>log()</code>, and <code>sqrt()</code>.
+</p>
+
+<p>
+An operation which is <i>not</i> performed elementwise is array multiplication, <code>*</code>.  If were were to try <code>fred*mary</code> then we would get an error:
+</p>
+
+<pre class="example">
+ERROR: no method *(Array{Int32,1},Array{Int32,1})
+</pre>
+
+<p>
+The reason for the error is that <code>julia</code> is trying to do matrix multiplication on two <code>9x1</code> arrays which, we know from Linear Algebra, is not allowed. Instead, we can accomplish element-wise multiplication with the following:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">fred.*mary
+</pre>
+</div>
+
+<pre class="example">
+9-element Int32 Array:
+ 296
+ 155
+ 285
+ 366
+ 304
+ 204
+ 161
+ 162
+  96
+</pre>
+
+<p>
+Notice the dot before the multiplication.  A similar trick works for
+elementwise division.  By the way, with two <code>9x1</code> arrays it is legal
+to compute the dot product like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">fred<span style="color: #8b2252;">'*mary</span>
+</pre>
+</div>
+
+<pre class="example">
+1-element Int32 Array:
+ 2029
+</pre>
+
+<p>
+where notice we have transposed <code>fred</code> and done ordinary matrix
+multiplication with <code>fred'*mary</code>.
+</p>
+</div>
+</div>
+<div id="outline-container-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Getting Help</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+When you get in the thick of <code>julia</code> you will soon find yourself
+looking for help. The help resources for <code>julia</code> are not (yet) as
+extensive as those for some other languages that have been around for
+a while (such as R).  <code>julia</code> is new and many of the help topics
+haven't been written yet.  Nevertheless, sometimes a person is lucky
+and you can get help on a function when it's available with the
+<code>help()</code> function.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">help</span>(<span style="color: #8b2252;">"factorial"</span>)
+</pre>
+</div>
+
+<pre class="example">
+Loading help data...
+Base.factorial(n)
+
+   Factorial of n
+
+Base.factorial(n, k)
+
+   Compute "factorial(n)/factorial(k)"
+</pre>
+
+<p>
+In addition to this, you can type <code>help()</code> which gives an extended
+list of help topics.  For instance, I find myself doing
+<code>help("Statistics")</code> a lot.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Other tips</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+It is unnecessary to retype commands repeatedly, since Emacs/ESS
+remembers what you have entered at the <code>julia></code> prompt. To navigate
+through previous commands put point at the lowest command line and
+do either <code>M-p</code> or <code>M-n</code>.
+</p>
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Other resources</h3>
+<div class="outline-text-3" id="text-3-1">
+<ul class="org-ul">
+<li>Check out the official <code>julia</code> manual <a href="http://docs.julialang.org/en/latest/manual/" >here</a>.
+</li>
+<li>The <i>Standard Library</i> (a different type of manual) is <a href="http://docs.julialang.org/en/latest/stdlib/" >here</a>.
+</li>
+<li>There is a vibrant and growing <code>julia</code> community whose gateway is <a href="http://julialang.org/community/" >here</a>.
+</li>
+<li>There is a large and growing list of contributed packages <a href="http://docs.julialang.org/en/latest/packages/packagelist/" >here</a>.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Plotting with Winston</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+There's a pretty well fleshed out plotting example in the Graphics
+section of <a href="ob-julia-doc.html" >Org-mode and <code>julia</code>: an introduction</a>.  Check it out.
+</p>
+</div>
+</div>
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Fitting (generalized) linear models</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Douglas Bates (of <a href="http://www.springer.com/statistics/statistical+theory+and+methods/book/978-1-4419-0317-4" >Mixed Effects Models in S and S-PLUS</a> fame) has been
+putting together a <code>julia</code> package called GLM which already supports
+fitting generalized linear models to datasets.  This, together with
+the RDatasets package means there is already a bunch of stuff to keep
+a person busy.  Below is a modified example from the Multiple
+Regression chapter of IPSUR, translated to <code>julia</code> speak.
+</p>
+
+<p>
+First, we start <code>using</code> the packages we'll need.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">using RDatasets, DataFrames, Distributions, GLM
+</pre>
+</div>
+
+<p>
+Next we load the <code>trees</code> data frame from the RDatasets package (via
+the DataFrames package) and fit a linear model to the data.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">trees = <span style="color: #0000ff;">data</span>(<span style="color: #8b2252;">"datasets"</span>, <span style="color: #8b2252;">"trees"</span>)
+treeslm = <span style="color: #0000ff;">lm</span>(:(Girth ~ Height + Volume), trees)
+</pre>
+</div>
+
+<p>
+There is a <i>ton</i> of output from both the above commands which we omit
+here for the sake of brevity.  Most of it, though, is similar to to
+output we might see in an R session.  We can extract the model
+coefficients with the <code>coef</code> function:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">coef</span>(treeslm)
+</pre>
+</div>
+
+<pre class="example">
+3-element Float64 Array:
+ 10.8164   
+ -0.0454835
+  0.19518
+</pre>
+
+<p>
+and we can finish by looking at a summary table similar to something
+like <code>summary(treeslm)</code> in R.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">coeftable</span>(treeslm)
+</pre>
+</div>
+
+<pre class="example">
+3x4 DataFrame:
+          Estimate Std.Error  t value   Pr(&gt;|t|)
+[1,]       10.8164    1.9732  5.48165 7.44691e-6
+[2,]    -0.0454835 0.0282621 -1.60935   0.118759
+[3,]       0.19518 0.0109553  17.8161 8.2233e-17
+</pre>
+</div>
+</div>
+
+</div><div id="postamble">
+<p class="date">Date: </p>
+<p class="author">Author : G. Jay Kerns</p>
+<p class="creator">Generated by <a href="http://orgmode.org">Org</a> mode 7.9.3f in <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.50.1.</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+</div>
+</body>
+</html>
