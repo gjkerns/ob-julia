@@ -16,14 +16,13 @@ keybindings.
 
 * What you need to get started
 
-- Note: :: a lot of the code blocks below have the header argument
-           =:eval no-export=.  This means that the code block can be
-           evaluated interactively by =C-c C-c= with point in the code
-           block but will /not/ be evaluated during export.  That
-           header argument is present because those blocks have
-           settings which conflict with my current setup (or are
-           otherwise redundant) yet are meant to be useful for other
-           people working through this document.
+- *Note:* several code blocks below have the header argument =:eval
+  no-export=.  This means that the code block can be evaluated
+  interactively by =C-c C-c= with point in the code block but will
+  /not/ be evaluated during export.  That header argument is present
+  because those blocks have settings which conflict with my current
+  setup (or are otherwise redundant) yet are meant to be useful for
+  other people working through this document.
 
 ** Julia
 
@@ -327,6 +326,15 @@ Org manual, and see Worg too for more information.
   setting with the line =#+PROPERTY: tangle yes= near the top of the
   org file.  See the Org manual for details.
 
+- At the time of this writing =ob-julia.el= only supports =:session=
+  evaluation and does not support external process evaluation. This
+  means that every =SRC julia= block should have a =:session
+  SOMETHING= header argument.  Alternatively, you can put a
+  buffer-wide header argument at the top of the org file, something
+  like this:
+
+  : #+PROPERTY: session *julia*
+
 - You may have noticed that those =julia= code lines with no output
   (for instance, lines with semicolons =;= at the end) generate an
   empty line in the =#+RESULTS= below the code block.  Consequently,
@@ -361,3 +369,6 @@ Org manual, and see Worg too for more information.
   following line at the top of this org file.
 
   : #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
+
+- =ob-julia.el= does not support =rownames= and =colnames= like =ob-R.el= does.
+

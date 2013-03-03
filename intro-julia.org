@@ -9,18 +9,29 @@
 #+PROPERTY: eval no-export
 #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
 
-This document is a /brief/ introduction to =julia=. It is based on a /Brief Introduction to R/ (an abbreviated Chapter 2 of [[http:ipsur.org][IPSUR]]) which I usually distribute to students using R for the first time.  One of the reasons for this document is that I wanted to get better acquainted with =julia= and make it easier for others to get better acquainted, too.
+This document is a /brief/ introduction to =julia=. It is based on a
+/Brief Introduction to R/ (an abbreviated Chapter 2 of [[http:ipsur.org][IPSUR]]) which I
+usually distribute to students using R for the first time.  One of the
+reasons for this document is that I wanted to get better acquainted
+with =julia= and make it easier for others to get better acquainted,
+too.
 
 * What you need to get started
 
-This document assumes you have at least a passing familiarity with Org-mode and Emacs keybindings.  
+This document assumes you have at least a passing familiarity with
+Org-mode and Emacs keybindings.
 
 #+BEGIN_SRC emacs-lisp :results silent :eval no-export
 (load "/path/to/ob-julia.el")
 (org-babel-julia-initiate-session "*julia*" nil)
 #+END_SRC
 
-- Note: :: a lot of the code blocks below have the header argument =:eval no-export= which means that the code block can be evaluated interactively in this session by =C-c C-c= with point in the code block but will /not/ be evaluated during export.  The reason is that those blocks have settings which conflict with my current setup but would be useful for others going through this document. 
+- *Note:* a lot of the code blocks below have the header argument
+  =:eval no-export= which means that the code block can be evaluated
+  interactively in this session by =C-c C-c= with point in the code
+  block but will /not/ be evaluated during export.  The reason is that
+  those blocks have settings which conflict with my current setup but
+  would be useful for others going through this document.
 
 ** Julia
 - First install takes the longest, later updates not so bad.
@@ -41,13 +52,16 @@ Pkg.add("RDatasets")
 
 *** Winston
 
-The most stable and fully featured of the =julia= graphics packages at the time of this writing appears to be the =Winston= package, though the =Gadfly= package is available and looks promising.
+The most stable and fully featured of the =julia= graphics packages at
+the time of this writing appears to be the =Winston= package, though
+the =Gadfly= package is available and looks promising.
 
 #+BEGIN_SRC julia :eval never
 Pkg.add("Winston")
 #+END_SRC
 
-The Winston package has lots of dependencies and many of them must be built from source (on Ubuntu).
+The Winston package has lots of dependencies and many of them must be
+built from source (on Ubuntu).
 
 *** Gadfly
 
@@ -59,7 +73,9 @@ Pkg.add("Gadfly")
 
 ** Org-mode
 
-This document assumes that you have at least a passing familiarity with org-mode such that you likely have something like the following already in your =.emacs=:
+This document assumes that you have at least a passing familiarity
+with org-mode such that you likely have something like the following
+already in your =.emacs=:
 
 #+BEGIN_SRC emacs-lisp :eval never
 (require 'org)
@@ -71,14 +87,19 @@ Another handy setting to have is
 (setq org-confirm-babel-evaluate nil)
 #+END_SRC
 
-In order to run this org file you will need to load =ob-julia.el= at some point. One way is to edit the following code block and then =C-c C-c= with point inside the block:
+In order to run this org file you will need to load =ob-julia.el= at
+some point. One way is to edit the following code block and then =C-c
+C-c= with point inside the block:
 
 #+BEGIN_SRC emacs-lisp :results silent :eval no-export
 (load "/path/to/ob-julia.el")
 (org-babel-julia-initiate-session "*julia*" nil)
 #+END_SRC
 
-The first command loads the =ob-julia.el= file and the second initiates a =julia= session in a buffer called =*julia*=.  An alternative method is to put the following in your =.emacs= (these should go below the =(require 'org)= line):
+The first command loads the =ob-julia.el= file and the second
+initiates a =julia= session in a buffer called =*julia*=.  An
+alternative method is to put the following in your =.emacs= (these
+should go below the =(require 'org)= line):
 
 #+BEGIN_SRC emacs-lisp :eval no-export
 (add-to-list 'load-path "/path/to/ob-julia.el")
@@ -88,14 +109,15 @@ The first command loads the =ob-julia.el= file and the second initiates a =julia
    (julia . t)))
 #+END_SRC
 
-The following lines (either here or in your =.emacs=) allow for inline image display in the Emacs buffer.
+The following lines (either here or in your =.emacs=) allow for inline
+image display in the Emacs buffer.
 
 #+BEGIN_SRC emacs-lisp :eval no-export
 (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
 (add-hook 'org-mode-hook 'org-display-inline-images)
 #+END_SRC
 
-If you'd like to do LaTeX export then put the following in your emacs.
+If you'd like to do LaTeX export then put the following in your =.emacs=.
 
 #+BEGIN_SRC emacs-lisp :eval never
 (require 'ox-latex)
@@ -121,42 +143,41 @@ The place to get the latest version of ESS is [[http://stat.ethz.ch/ESS/index.ph
 
 There are three basic methods for communicating with julia.
 
-- An Interactive session (julia>). :: This is the most basic way to
-     complete simple, one-line commands. Do =M-x julia RET= during an
-     Emacs session and the Emacs/ESS =julia= mode will open in a buffer.
-     Type whatever command you like; =julia= will evaluate what is typed
-     there and output the results in the buffer.
+- *An Interactive session (julia>).* This is the most basic way to
+  complete simple, one-line commands. Do =M-x julia RET= during an
+  Emacs session and the Emacs/ESS =julia= mode will open in a buffer.
+  Type whatever command you like; =julia= will evaluate what is typed
+  there and output the results in the buffer.
 
-- Source files. :: For longer programs (called /scripts/) there is too
-                   much code to write all at once in an interactive
-                   session. Also, sometimes we only wish to modify a
-                   small piece of the script and run it again in
-                   =julia=.
+- *Source files.* For longer programs (called /scripts/) there is too
+  much code to write all at once in an interactive session. Also,
+  sometimes we only wish to modify a small piece of the script and run
+  it again in =julia=.
 
   The way to do this is to open a dedicated =julia= script buffer with
-                   the sequence =C-x C-f whatever.jl=, where
-                   =whatever.jl= is a =julia= script which you've named
-                   whatever. Write the code in the buffer, then when
-                   satisfied the user evaluates lines or regions
-                   according to the following table. Then =julia= will
-                   evaluate the respective code and give output in the
-                   interactive buffer.
- 
+  the sequence =C-x C-f whatever.jl=, where =whatever.jl= is a =julia=
+  script which you've named whatever. Write the code in the buffer,
+  then when satisfied the user evaluates lines or regions according to
+  the following table. Then =julia= will evaluate the respective code
+  and give output in the interactive buffer.
+
   | =C-RET=   | Send region or current line and step to next line of code.  |
   | =M-C-x=   | Send region or function or paragraph.                       |
   | =C-c C-c= | Send region or function or paragraph and step to next line. |
 
-- Script mode. :: 
+- *Script mode.* Hello there. 
 
 ** =julia= is one fancy calculator
 
-=julia= can do any arithmetic you can imagine. For example, in an interactive session type =2 + 3= and observe
+=julia= can do any arithmetic you can imagine. For example, in an
+interactive session type =2 + 3= and observe
 
 #+BEGIN_SRC julia
 2 + 3
 #+END_SRC
 
-The =julia>= means that =julia= is waiting on your next command. Entry numbers will be generated for each row, such as
+The =julia>= means that =julia= is waiting on your next command. Entry
+numbers will be generated for each row, such as
 
 #+BEGIN_SRC julia
 [3:50]
@@ -188,7 +209,10 @@ The =julia>= means that =julia= is waiting on your next command. Entry numbers w
  50
 #+end_example
 
-Notice that =julia= doesn't show the whole list of numbers, it elides them with vertical ellipses \(\vdots\). Note also the =[3:50]= notation, which generates all integers in sequence from 3 to 50. One can also do things like
+Notice that =julia= doesn't show the whole list of numbers, it elides
+them with vertical ellipses \(\vdots\). Note also the =[3:50]=
+notation, which generates all integers in sequence from 3 to 50. One
+can also do things like
 
 #+BEGIN_SRC julia :eval no-export
 2 * 3 * 4 * 5  # multiply
@@ -204,20 +228,36 @@ sqrt(-2)
 : ERROR: DomainError()
 :  in sqrt at math.jl:111
 
-Notice that a =DomainError()= was produced; we are not allowed to take square roots of negative numbers. Also notice the number sign =#=, which is used for comments. Everything typed on the same line after the =#= will be ignored by julia. There is no =julia= continuation prompt.  If you press =RET= before a statement is complete then empty lines keep piling up until you finish the command. 
+Notice that a =DomainError()= was produced; we are not allowed to take
+square roots of negative numbers. Also notice the number sign =#=,
+which is used for comments. Everything typed on the same line after
+the =#= will be ignored by julia. There is no =julia= continuation
+prompt.  If you press =RET= before a statement is complete then empty
+lines keep piling up until you finish the command.
 
-Some other fuctions that will be of use are =abs()= for absolute value, =log()= for the natural logarithm, =exp()= for the exponential function, and =factorial()= for... uh... factorials.
+Some other fuctions that will be of use are =abs()= for absolute
+value, =log()= for the natural logarithm, =exp()= for the exponential
+function, and =factorial()= for... uh... factorials.
 
-Assignment is useful for storing values to be used later. Notice the semicolon at the end of the first statement.  Without the semicolon, =julia= would print the result of the assigment (namely, =5=).  
+Assignment is useful for storing values to be used later. Notice the
+semicolon at the end of the first statement.  Without the semicolon,
+=julia= would print the result of the assigment (namely, =5=).
 
 #+BEGIN_SRC julia
 y = 5;    # stores the value 5 in y
 3 + y
 #+END_SRC
 
-There aren't other assignment operators (like =<-= in R).  For variable names you can use letters. (possibly followed by) numbers, and/or underscore "_" characters. You cannot use mathematical operators, you cannot use dots, and numbers can't go in front of numbers (those are interpreted by =julia= as coefficients). Examples: =x=, =x1=, =y32=, =z_var=.
+There aren't other assignment operators (like =<-= in R).  For
+variable names you can use letters. (possibly followed by) numbers,
+and/or underscore "_" characters. You cannot use mathematical
+operators, you cannot use dots, and numbers can't go in front of
+numbers (those are interpreted by =julia= as coefficients). Examples:
+=x=, =x1=, =y32=, =z_var=.
 
-If you would like to enter the data 74,31,95,61,76,34,23,54,96 into julia, you may create a data array with double brackets (the analogue of the =c()= function in R). 
+If you would like to enter the data 74,31,95,61,76,34,23,54,96 into
+julia, you may create a data array with double brackets (the analogue
+of the =c()= function in R).
 
 #+BEGIN_SRC julia
 fred = [74, 31, 95, 61, 76, 34, 23, 54, 96]
@@ -237,7 +277,8 @@ fred = [74, 31, 95, 61, 76, 34, 23, 54, 96]
  96
 #+end_example
 
-The array =fred= has 9 entries. We can access individual components with bracket =[ ]= notation:
+The array =fred= has 9 entries. We can access individual components
+with bracket =[ ]= notation:
 
 #+BEGIN_SRC julia
 fred[3]
@@ -259,9 +300,16 @@ fred[[1, 3, 5, 8]]
  54
 #+end_example
 
-Notice we needed double brackets for the third example. If you would like to empty the array =fred=, you can do it by typing =fred = []=.
+Notice we needed double brackets for the third example. If you would
+like to empty the array =fred=, you can do it by typing =fred = []=.
 
-Data arrays in =julia= have type. There are all sorts of integer types (=Int8=, =uInt8=, =Int32=, ...), strings (=ASCIIString=), logical (=Bool=), unicode characters (=Char=), then there are floating-point types (=Float16=, =Float32=), even complex numbers like =1 + 2im= and even rational numbers like =3//4=, not to mention =Inf=, =-Inf=, and =NaN= (which stands for /not a number/). If you ever want to know what it is you're dealing with you can find out with the =typeof= function.
+Data arrays in =julia= have type. There are all sorts of integer types
+(=Int8=, =uInt8=, =Int32=, ...), strings (=ASCIIString=), logical
+(=Bool=), unicode characters (=Char=), then there are floating-point
+types (=Float16=, =Float32=), even complex numbers like =1 + 2im= and
+even rational numbers like =3//4=, not to mention =Inf=, =-Inf=, and
+=NaN= (which stands for /not a number/). If you ever want to know what
+it is you're dealing with you can find out with the =typeof= function.
 
 #+BEGIN_SRC julia
 simpsons = ["Homer", "Marge", "Bart", "Lisa", "Maggie"]
@@ -288,7 +336,9 @@ x >= 6
 : 
 : false
 
-Notice the ~>=~ symbol which stands for "greater than or equal to".  Many functions in =julia= are vectorized. Once we have stored a data vector then we can evaluate functions on it. 
+Notice the ~>=~ symbol which stands for "greater than or equal to".
+Many functions in =julia= are vectorized. Once we have stored a data
+vector then we can evaluate functions on it.
 
 #+BEGIN_SRC julia
 sum(fred)
@@ -303,9 +353,11 @@ mean(fred)                 # sample mean, should be same answer
 : 60.44444444444444
 : 60.44444444444444
 
-Other popular functions for vectors are =min()=, =max()=, =sort()=, and =cumsum()=.
+Other popular functions for vectors are =min()=, =max()=, =sort()=,
+and =cumsum()=.
 
-Arithmetic in =julia= is usually done element-wise, and the operands must be of conformable dimensions. 
+Arithmetic in =julia= is usually done element-wise, and the operands
+must be of conformable dimensions.
 
 #+BEGIN_SRC julia
 fred2 = [4, 5, 3, 6, 4, 6, 7, 3, 1];
@@ -349,11 +401,19 @@ fred - mean(fred)
   35.5556
 #+end_example
 
-The operations =+= and =-= are performed element-wise. Notice in the last vector that =mean(fred)= was subtracted from each entry in turn. This is also known as data recycling. Other popular vectorizing functions are =sin()=, =cos()=, =exp()=, =log()=, and =sqrt()=.
+The operations =+= and =-= are performed element-wise. Notice in the
+last vector that =mean(fred)= was subtracted from each entry in
+turn. This is also known as data recycling. Other popular vectorizing
+functions are =sin()=, =cos()=, =exp()=, =log()=, and =sqrt()=.
 
 ** Getting Help
 
-When you are using =julia= it will not take long before you find yourself needing help. The help resources for =julia= are not as extensive as those for some other languages (such as R).  =julia= is new and many of the help topics haven't been written yet.  Nevertheless sometimes a person is lucky and you can get help on a function when it's available with the =help()= function.
+When you are using =julia= it will not take long before you find
+yourself needing help. The help resources for =julia= are not as
+extensive as those for some other languages (such as R).  =julia= is
+new and many of the help topics haven't been written yet.
+Nevertheless sometimes a person is lucky and you can get help on a
+function when it's available with the =help()= function.
 
 #+BEGIN_SRC julia
 help("factorial")
@@ -368,15 +428,25 @@ help("factorial")
 : 
 :    Compute "factorial(n)/factorial(k)"
 
-In addition to this, you can type =help()= which gives an extended list of help topics.  For instance, I find myself doing =help("Statistics")= a lot.
+In addition to this, you can type =help()= which gives an extended
+list of help topics.  For instance, I find myself doing
+=help("Statistics")= a lot.
 
-Note also =example()=. This initiates the running of examples, if available, of the use of the function specified by the argument.
+Note also =example()=. This initiates the running of examples, if
+available, of the use of the function specified by the argument.
 
 * Other tips
 
-It is unnecessary to retype commands repeatedly, since Emacs/ESS remembers what you have entered at the =julia>= prompt. To navigate through previous commands put point at the lowest command line and push either =M-p= or =M-n=. 
+It is unnecessary to retype commands repeatedly, since Emacs/ESS
+remembers what you have entered at the =julia>= prompt. To navigate
+through previous commands put point at the lowest command line and
+push either =M-p= or =M-n=.
 
-To find out what all variables are in the current work environment, use the commands =ls()= or =objects()=. These list all available objects in the workspace. If you wish to remove one or more variables, use =remove(var1, var2)=, and to remove all of them use =rm(list=ls())=. 
+To find out what all variables are in the current work environment,
+use the commands =ls()= or =objects()=. These list all available
+objects in the workspace. If you wish to remove one or more variables,
+use =remove(var1, var2)=, and to remove all of them use
+=rm(list=ls())=.
 
 ** Other resources
 
@@ -407,7 +477,12 @@ file(p, "example1.png")
 
 * Fitting (generalized) linear models
 
-Douglas Bates (of [[http://www.springer.com/statistics/statistical+theory+and+methods/book/978-1-4419-0317-4][Mixed Effects Models in S and S-PLUS]] fame) has been putting together a =julia= package called GLM which already supports fitting generalized linear models to datasets.  This, together with the RDatasets package means there is already a bunch of stuff to keep a person busy.  Below is a modified example from the Multiple Regression chapter of IPSUR, translated to =julia= speak.
+Douglas Bates (of [[http://www.springer.com/statistics/statistical+theory+and+methods/book/978-1-4419-0317-4][Mixed Effects Models in S and S-PLUS]] fame) has been
+putting together a =julia= package called GLM which already supports
+fitting generalized linear models to datasets.  This, together with
+the RDatasets package means there is already a bunch of stuff to keep
+a person busy.  Below is a modified example from the Multiple
+Regression chapter of IPSUR, translated to =julia= speak.
 
 First, we load the packages we'll need.
 
@@ -415,20 +490,24 @@ First, we load the packages we'll need.
 using RDatasets, DataFrames, Distributions, GLM
 #+END_SRC
 
-Next we load the =trees= data frame from the RDatasets package and fit a linear model to the data.
+Next we load the =trees= data frame from the RDatasets package and fit
+a linear model to the data.
 
 #+BEGIN_SRC julia :exports code
 trees = data("datasets", "trees");
 treeslm = lm(:(Girth ~ Height + Volume), trees)
 #+END_SRC
 
-The extended output above should look similar to something we might see in an R session.  We can extract the model coefficients with the =coef= function:
+The extended output above should look similar to something we might
+see in an R session.  We can extract the model coefficients with the
+=coef= function:
 
 #+BEGIN_SRC julia :exports code
 coef(treeslm)
 #+END_SRC
 
-and we can look at a summary table similar to something like =summary(treeslm)= in R
+and we can finish by looking at a summary table similar to something
+like =summary(treeslm)= in R.
 
 #+BEGIN_SRC julia :exports code
 coeftable(treeslm)

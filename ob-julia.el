@@ -51,11 +51,6 @@
      ((lambda (inside)
 	(if graphics-file
             inside 
-; julia's graphics devices don't work like R's do
-;	    (append
-;	     (list (org-babel-julia-construct-graphics-device-call
-;		    graphics-file params))
-;	     inside)
 	  inside)
 	)
       (append (org-babel-variable-assignments:julia params)
@@ -187,35 +182,6 @@ current code buffer."
   (and (member "graphics" (cdr (assq :result-params params)))
        (cdr (assq :file params))))
 
-;; The following isn't necessary with julia because
-;; we write all plots from inside the code-block
-;
-;(defun org-babel-julia-construct-graphics-device-call (out-file params)
-;  "Construct the call to the graphics device."
-;  (let ((devices
-;	 '((:png . "png")
-;	   (:svg . "svg")
-;	   (:pdf . "pdf")
-;	   (:eps . "eps")))
-;	(allowed-args '(:width :horizontal))
-;	(device (and (string-match ".+\\.\\([^.]+\\)" out-file)
-;		     (match-string 1 out-file)))
-;	(extra-args (cdr (assq :julia-dev-args params))) filearg args)
-;   (setq device (or (and device (cdr (assq (intern (concat ":" device))
-;					    devices))) "png"))
-;    (setq filearg
-;	  (if (member device '("postscript")) "file" "filename"))
-;    (setq args (mapconcat
-;		(lambda (pair)
-;		  (if (member (car pair) allowed-args)
-;		      (format ",%s=%S"
-;			      (substring (symbol-name (car pair)) 1)
-;			      (cdr pair)) ""))
-;		params ""))
-;   (format "%s(%s=\"%s\"%s%s%s)"
-;	    device filearg out-file args
-;	    (if extra-args "," "") (or extra-args ""))))
-
 (defvar org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
@@ -245,11 +211,6 @@ last statement in BODY, as elisp."
      (let ((tmp-file (org-babel-temp-file "julia-")))
        (org-babel-eval org-babel-julia-command
 		       (format org-babel-julia-write-object-command
-;; don't need row-names or col-names
-;			       (if row-names-p "TRUE" "FALSE")
-;			       (if column-names-p
-;				   (if row-names-p "NA" "TRUE")
-;				 "FALSE")
 			       (org-babel-process-file-name tmp-file 'noquote)
 			       (format "begin\n%s\nend" body)))
        (org-babel-julia-process-value-result
