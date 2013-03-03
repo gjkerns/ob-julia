@@ -3,10 +3,11 @@
 	       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>Org-mode and julia: an introduction</title>
+<title>Org-mode and <code>julia</code>: an introduction</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-<meta name="title" content="Org-mode and julia: an introduction"/>
+<meta name="title" content="Org-mode and <code>julia</code>: an introduction"/>
 <meta name="generator" content="Org-mode"/>
+<meta name="generated" content="March 2, 2013"/>
 <meta name="author" content="G. Jay Kerns"/>
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
@@ -147,7 +148,7 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">Org-mode and julia: an introduction</h1>
+<h1 class="title">Org-mode and <code>julia</code>: an introduction</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -402,10 +403,88 @@ place and initialized properly. Now the fun begins.
 
 <div id="outline-container-2-1" class="outline-3">
 <h3 id="sec-2-1"><span class="section-number-3">2.1</span> :results value</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+The collection class of the <code>:results</code> header argument supports two mutually exclusive options: <code>value</code> and <code>output</code>.  When <code>:results value</code> is specified, Org takes the body of the source block, creates a function with that body, evaluates the function with <code>julia</code>, stores the result in a <code>.csv</code> file, then converts the <code>.csv</code> file to an <code>emacs-lisp</code> table, and finally inserts the table in the buffer.  <i>Whew!</i>  The bottom line?  Hit <code>C-c C-c</code> in the following code block.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">rand</span>(2,3)
+</pre>
 </div>
 
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col class="right"/>
+
+<col class="right"/>
+
+<col class="right"/>
+</colgroup>
+<tbody>
+<tr>
+<td class="right">0.999939439042129</td>
+<td class="right">0.05372529032959994</td>
+<td class="right">0.02450126420987675</td>
+</tr>
+
+<tr>
+<td class="right">0.08199970646956767</td>
+<td class="right">0.015234813811405568</td>
+<td class="right">0.1871767733729599</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+As expected, the output of the command was a <code>2x3</code> array and Org inserted a table into the buffer.  This functionality is relatively powerful with other languages such as R, for instance, because <code>ob-R.el</code> works with <code>TAB</code> separated files instead and <code>read.table</code> in R supports reading of much more varied data types compared to <code>readcsv</code> in <code>julia</code> (at the present time).  Nevertheless, the functionality exists in <code>julia</code> and as time passes and <code>julia</code> adds more options we'll add more, too.  
+</p>
+</div>
+</div>
 <div id="outline-container-2-2" class="outline-3">
 <h3 id="sec-2-2"><span class="section-number-3">2.2</span> :results output</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+We will get a lot more mileage out of the <code>:results output</code> option. Every command in the src block body is evaluated by <code>julia</code> in turn and the results are placed in the buffer to be typeset in a verbatim environment.  This option is similar to typing commands in <code>julia</code> at an interactive session.  The analogy isn't exact, though, because at an interactive session it is one (1) command in, one (1) result out.  Multiple lines in an org SRC block in contrast have RESULTS which are lumped together.  Like this: (do <code>C-c C-c</code>)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 + 3
+<span style="color: #0000ff;">print</span>(<span style="color: #8b2252;">"hello"</span>)
+<span style="color: #0000ff;">sqrt</span>(5)
+</pre>
+</div>
+
+<pre class="example">
+5
+hello
+2.23606797749979
+</pre>
+
+<p>
+It is sometimes helpful to split up SRC blocks into smaller chunks so that buildup of RESULTS does not get out of hand.  Also, specific to <code>julia</code> we can sometimes put a semicolon at the end of the command to suppress output, like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 + 3;
+<span style="color: #0000ff;">print</span>(<span style="color: #8b2252;">"hello"</span>);
+<span style="color: #0000ff;">sqrt</span>(5);
+</pre>
+</div>
+
+<pre class="example">
+hello
+</pre>
+
+<p>
+Notice the outer two results were suppressed, but not the middle one.
+</p>
+</div>
 </div>
 </div>
 <div id="outline-container-3" class="outline-2">
@@ -500,6 +579,12 @@ mode</i>. Assuming you've done that, evaluate the following code block.
 
 <pre class="src src-julia"><span style="color: #0000ff;">file</span>(p, <span style="color: #8b2252;">"example1.png"</span>)
 </pre>
+</div>
+
+
+<div class="figure">
+<p><img src="example1.png"  alt="example1.png"/></p>
+<p></p>
 </div>
 
 <p>
@@ -739,7 +824,7 @@ following line at the top of this org file.
 </div>
 
 </div><div id="postamble">
-<p class="date">Date: </p>
+<p class="date">Date: March 2, 2013</p>
 <p class="author">Author : G. Jay Kerns</p>
 <p class="creator">Generated by <a href="http://orgmode.org">Org</a> mode 7.9.3f in <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.50.1.</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>

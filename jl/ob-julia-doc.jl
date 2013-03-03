@@ -4,6 +4,16 @@ Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim",
 
 Pkg.add("RDatasets")
 
+rand(2,3)
+
+2 + 3
+print("hello")
+sqrt(5)
+
+2 + 3;
+print("hello");
+sqrt(5);
+
 Pkg.add("Winston")
 
 using Winston

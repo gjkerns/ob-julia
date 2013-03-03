@@ -1,6 +1,7 @@
 #+TITLE:    Introduction to =julia=
 #+AUTHOR:   G. Jay Kerns
 #+EMAIL:    gkerns@ysu.edu
+#+DATE:     March 2, 2013
 #+OPTIONS:  H:2
 #+PROPERTY: exports both
 #+PROPERTY: results output
