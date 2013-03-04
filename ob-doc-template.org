@@ -1,0 +1,66 @@
+#+OPTIONS:    H:3 num:nil toc:2 \n:nil @:t ::t |:t ^:{} -:t f:t *:t TeX:t LaTeX:t skip:nil d:(HIDE) tags:not-in-toc
+#+STARTUP:    align fold nodlcheck hidestars oddeven lognotestate hideblocks
+#+SEQ_TODO:   TODO(t) INPROGRESS(i) WAITING(w@) | DONE(d) CANCELED(c@)
+#+TAGS:       Write(w) Update(u) Fix(f) Check(c) noexport(n)
+#+TITLE:      Language Source Code Blocks in Org Mode
+#+AUTHOR:     Your name
+#+EMAIL:      you[at]email[dot]org
+#+LANGUAGE:   en
+#+STYLE:      <style type="text/css">#outline-container-introduction{ clear:both; }</style>
+#+LINK_UP:    ../languages.html
+#+LINK_HOME:  http://orgmode.org/worg/
+#+EXPORT_EXCLUDE_TAGS: noexport
+
+#+name: banner
+#+begin_html
+  <div id="subtitle" style="float: center; text-align: center;">
+  <p>
+  Org Mode support for <a href="http://language-site/">Language</a>
+  </p>
+  <p>
+  <a href="http://language-site/">
+  <img src="http://language-site/graphic.file"/>
+  </a>
+  </p>
+  </div>
+#+end_html
+
+* TODO Template Checklist [0/12] 				   :noexport:
+  - [ ] Revise #+TITLE:
+  - [ ] Indicate #+AUTHOR:
+  - [ ] Add #+EMAIL:
+  - [ ] Revise banner source block [0/3]
+    - [ ] Add link to a useful language web site
+    - [ ] Replace "Language" with language name
+    - [ ] Find a suitable graphic and use it to link to the language
+      web site
+  - [ ] Write an [[Introduction]]
+  - [ ] Describe [[Requirements%20and%20Setup][Requirements and Setup]]
+  - [ ] Replace "Language" with language name in [[Org%20Mode%20Features%20for%20Language%20Source%20Code%20Blocks][Org Mode Features for Language Source Code Blocks]]
+  - [ ] Describe [[Header%20Arguments][Header Arguments]]
+  - [ ] Describe support for [[Sessions]]
+  - [ ] Describe [[Result%20Types][Result Types]]
+  - [ ] Describe [[Other]] differences from supported languages
+  - [ ] Provide brief [[Examples%20of%20Use][Examples of Use]]
+* Introduction
+  - Brief description of language.
+  - Range of typical uses within Org Mode.
+* Requirements and Setup
+  - Installation and configuration of language software
+  - Emacs configuration
+  - Org-mode configuration (org-babel-do-load-languages)
+* Org Mode Features for Language Source Code Blocks
+** Header Arguments
+   - Language-specific default values
+   - Language-specific header arguments
+** Sessions
+   - Support or not
+   - Typical use for sessions
+** Result Types
+   - Which result types are supported?
+** Other
+   - Differences from other supported languages
+* Examples of Use
+  - Hello World!
+  - Common uses
+  - Links to tutorials and other resources
