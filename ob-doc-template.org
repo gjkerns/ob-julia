@@ -2,65 +2,534 @@
 #+STARTUP:    align fold nodlcheck hidestars oddeven lognotestate hideblocks
 #+SEQ_TODO:   TODO(t) INPROGRESS(i) WAITING(w@) | DONE(d) CANCELED(c@)
 #+TAGS:       Write(w) Update(u) Fix(f) Check(c) noexport(n)
-#+TITLE:      Language Source Code Blocks in Org Mode
-#+AUTHOR:     Your name
-#+EMAIL:      you[at]email[dot]org
+#+TITLE:      Julia Source Code Blocks in Org Mode
+#+AUTHOR:     G. Jay Kerns
+#+EMAIL:      gkerns at ysu dot edu
 #+LANGUAGE:   en
 #+STYLE:      <style type="text/css">#outline-container-introduction{ clear:both; }</style>
 #+LINK_UP:    ../languages.html
 #+LINK_HOME:  http://orgmode.org/worg/
 #+EXPORT_EXCLUDE_TAGS: noexport
+#+PROPERTY: exports both
+#+PROPERTY: results output
+#+PROPERTY: session *julia*
+#+PROPERTY: eval no-export
+#+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
 
 #+name: banner
 #+begin_html
   <div id="subtitle" style="float: center; text-align: center;">
   <p>
-  Org Mode support for <a href="http://language-site/">Language</a>
+  Org Mode support for <a href="http://julialang.org/">Julia</a>
   </p>
   <p>
-  <a href="http://language-site/">
-  <img src="http://language-site/graphic.file"/>
+  <a href="http://julialang.org/">
+  <img src="http://julialang.org/images/logo.png"/>
   </a>
   </p>
   </div>
 #+end_html
 
-* TODO Template Checklist [0/12] 				   :noexport:
-  - [ ] Revise #+TITLE:
-  - [ ] Indicate #+AUTHOR:
-  - [ ] Add #+EMAIL:
-  - [ ] Revise banner source block [0/3]
-    - [ ] Add link to a useful language web site
-    - [ ] Replace "Language" with language name
-    - [ ] Find a suitable graphic and use it to link to the language
+* DONE Template Checklist [12/12]				   :noexport:
+  - [X] Revise #+TITLE:
+  - [X] Indicate #+AUTHOR:
+  - [X] Add #+EMAIL:
+  - [X] Revise banner source block [3/3]
+    - [X] Add link to a useful language web site
+    - [X] Replace "Language" with language name
+    - [X] Find a suitable graphic and use it to link to the language
       web site
-  - [ ] Write an [[Introduction]]
-  - [ ] Describe [[Requirements%20and%20Setup][Requirements and Setup]]
-  - [ ] Replace "Language" with language name in [[Org%20Mode%20Features%20for%20Language%20Source%20Code%20Blocks][Org Mode Features for Language Source Code Blocks]]
-  - [ ] Describe [[Header%20Arguments][Header Arguments]]
-  - [ ] Describe support for [[Sessions]]
-  - [ ] Describe [[Result%20Types][Result Types]]
-  - [ ] Describe [[Other]] differences from supported languages
-  - [ ] Provide brief [[Examples%20of%20Use][Examples of Use]]
+  - [X] Write an [[Introduction]]
+  - [X] Describe [[Requirements%20and%20Setup][Requirements and Setup]]
+  - [X] Replace "Language" with language name in [[Org%20Mode%20Features%20for%20Language%20Source%20Code%20Blocks][Org Mode Features for Language Source Code Blocks]]
+  - [X] Describe [[Header%20Arguments][Header Arguments]]
+  - [X] Describe support for [[Sessions]]
+  - [X] Describe [[Result%20Types][Result Types]]
+  - [X] Describe [[Other]] differences from supported languages
+  - [X] Provide brief [[Examples%20of%20Use][Examples of Use]]
+
 * Introduction
-  - Brief description of language.
-  - Range of typical uses within Org Mode.
+
+[[http://julialang.org/][Julia]] is a high-performance dynamic programming language for
+scientific and technical computing. Development started in 2009 and a
+free version was released in February, 2012.
+
+=Julia= is licensed under the MIT License. The external libraries
+=julia= uses include their own licenses.
+
 * Requirements and Setup
-  - Installation and configuration of language software
-  - Emacs configuration
-  - Org-mode configuration (org-babel-do-load-languages)
-* Org Mode Features for Language Source Code Blocks
+** Julia
+
+You are going to need a working installation of =julia=.  The homepage
+on [[https://github.com/JuliaLang/julia][GitHub]] has the pertinent links collected all in one place:
+
+- *Homepage:* http://julialang.org
+- *Binaries:* http://code.google.com/p/julialang/downloads/list
+- *Packages:* http://docs.julialang.org/en/latest/packages/packagelist/
+- *Mailing lists:* http://julialang.org/community/
+- *IRC:* http://webchat.freenode.net/?channels=julia
+- *Source code:* https://github.com/JuliaLang/julia
+- *Git clone URL:* =git://github.com/JuliaLang/julia.git=
+- *Documentation:* http://julialang.org/manual/
+
+_Fair warning:_ the initial install takes a /long time/, largely
+because julia has a lot of dependencies. Never fear, though;
+subsequent updates are brief.
+
+** ESS - Emacs Speaks Statistics
+
+You are going to need a relavely bleeding-edge version of ESS since it
+is only due to recent ESS changes that this document is even possible.
+The place to look for the latest version of ESS is [[http://stat.ethz.ch/ESS/index.php?Section=download][here]].  At some
+point after installation you will likely put something like the
+following in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval never
+(require 'ess-site)
+#+END_SRC
+
+Once ESS is up and running you will need to tell it where the =julia=
+executable is. Edit the following and place it in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval never
+(setq  inferior-julia-program-name "/path/to/julia-release-basic")
+#+END_SRC
+
+After the above steps are complete then you should be able to start
+Emacs and launch an interactive =julia= session via =M-x julia=.  If
+you manage to get that settled then at this point you should be able
+to do everything in the [[https://raw.github.com/gjkerns/ob-julia/master/intro-julia.org][Introduction to Julia]].
+
+** Add-on packages
+
+There is a growing list of [[http://docs.julialang.org/en/release-0.1/packages/packagelist/][contibuted packages]] which add to the base
+functionality of =julia=.  For example, several statistics packages
+were mentioned a few moths ago in a blog post by [[https://github.com/johnmyleswhite][John Myles White]]
+entitled [[http://www.johnmyleswhite.com/notebook/2012/12/02/the-state-of-statistics-in-julia/][The State of Statistics in Julia]].  The instructions in the
+blog post are (already) a bit out-of-date; the currently recommended
+way to install the packages is to launch an interactive =julia=
+session and execute the following command:
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("DataFrames", "Distributions", "GLM", "MCMC", "Optim", 
+        "NHST", "Clustering")
+#+END_SRC
+
+I recommend you *not* execute the =Pkg.add= command here (if you do it
+in this buffer then you can't watch the download and install as it is
+happening).  As John notes, the =RDatasets= package takes a lot longer
+to download than the others.  Perhaps it would be wise to install it
+separately.
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("RDatasets")
+#+END_SRC
+
+You will notice both =Pkg.add= code blocks in the =.org= document have
+the =:eval never= header argument.
+
+** Org-mode
+
+Since you have at least a passing familiarity with org-mode then you
+probably already have something like the following in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(require 'org)
+#+END_SRC
+
+Another handy setting to have is
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(setq org-confirm-babel-evaluate nil)
+#+END_SRC
+
+The following lines (either here or in your =.emacs=) permit inline
+image display in the Emacs buffer.
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+(add-hook 'org-mode-hook 'org-display-inline-images)
+#+END_SRC
+
+** =ob-julia.el=
+
+You are going to want a copy of =ob-julia.el= to fully integrate
+=julia= with Org-mode.  At the present time =ob-julia.el= lives in the
+location =/path/to/org-mode/contrib/lisp= of bleeding edge Org.  You
+can find it and some other documents to get you started [[https://github.com/gjkerns/ob-julia][here]].  If you
+are working from the =.org= version of this document then it suffices
+to edit the code block below and evaluate it by =C-c C-c= with point
+in the code block.
+
+#+BEGIN_SRC emacs-lisp :results silent :eval no-export
+(load "/path/to/ob-julia.el")
+#+END_SRC
+
+An alternative method is to put the following in your =.emacs= (these
+should go below the =(require 'org)= line):
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(add-to-list 'load-path "/path/to/org-mode/contrib/lisp")
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t) (julia . t)))
+#+END_SRC
+
+You are all set.
+
+* Org Mode Features for Julia Source Code Blocks
+
+If you've gotten this far then everything is installed in the right
+place and initialized properly. Now the fun begins.
+
 ** Header Arguments
-   - Language-specific default values
-   - Language-specific header arguments
+
+Org-mode support of =julia= includes almost all of the usual header arguments.
+
 ** Sessions
-   - Support or not
-   - Typical use for sessions
+
+At the time of this writing, =ob-julia.el= only supports =:session=
+evaluation and does not support external process evaluation. This
+means that every =SRC julia= block should have a =:session SOMETHING=
+header argument.  Alternatively, you can put a buffer-wide header
+argument at the top of the org file, something like this:
+
+: #+PROPERTY: session *julia*
+
 ** Result Types
-   - Which result types are supported?
-** Other
-   - Differences from other supported languages
+
+*** :results value 
+
+The collection class of the =:results= header argument supports two
+mutually exclusive options: =value= and =output=.  When =:results
+value= is specified, Org takes the body of the source block, creates a
+function with that body, evaluates the function with =julia=, stores
+the result in a =.csv= file, then converts the =.csv= file to an
+=emacs-lisp= table, and finally inserts the table in the buffer.
+/Whew!/ The bottom line?  Hit =C-c C-c= in the following code block.
+
+#+BEGIN_SRC julia :results value
+rand(2,3)
+#+END_SRC
+
+#+RESULTS:
+| 0.3715303800228136 | 0.21579188514924108 | 0.3291019424007178 |
+|  0.659813851572707 | 0.20079077424458047 | 0.9476793913656847 |
+
+As expected, the output of the command was a =2x3= array and Org
+inserted a table into the buffer.  This functionality is relatively
+powerful with other languages such as R, for instance, because
+=ob-R.el= works with =TAB= separated files instead and =read.table= in
+R supports reading of much more varied data types compared to
+=readcsv= in =julia= (at the present time).  Nevertheless, the
+functionality exists in =julia= and as time passes and =julia= adds
+more options we'll add more, too.
+
+*** :results output
+
+We will get a lot more mileage out of the =:results output= header
+argument. Every command in the src block body is evaluated by =julia=
+in turn and the results are placed in the buffer to be typeset in a
+verbatim environment.  This option is similar to typing commands in
+=julia= at an interactive session.  The analogy isn't exact, though,
+because at an interactive session it is one (1) command in, one (1)
+result out.  Multiple lines in an org SRC block in contrast have
+RESULTS which are lumped together.  Like this: (do =C-c C-c=)
+
+#+BEGIN_SRC julia
+2 + 3
+print("hello")
+sqrt(5)
+#+END_SRC
+
+#+RESULTS:
+: 5
+: hello
+: 2.23606797749979
+
+It is sometimes helpful to split up SRC blocks into smaller chunks so
+that buildup of RESULTS does not get out of hand.  Also, specific to
+=julia= we can sometimes put a semicolon at the end of the command to
+suppress output, like this:
+
+#+BEGIN_SRC julia
+2 + 3;
+print("hello");
+sqrt(5);
+#+END_SRC
+
+#+RESULTS:
+: 
+: hello
+
+Notice the outer two results were suppressed, but not the middle one.
+
+*** :results graphics
+
+Org-mode supports =julia= graphics by way of the =:results graphics= header argument.  See the section "Examples of Use" for details.
+
 * Examples of Use
-  - Hello World!
-  - Common uses
-  - Links to tutorials and other resources
+
+** Graphics
+
+The most stable and fully featured of the =julia= graphics packages at
+the time of this writing appears to be the [[https://github.com/nolta/Winston.jl][Winston package]], although
+the [[https://github.com/dcjones/Gadfly.jl][Gadfly package]] is also available and appears promising.  To
+install the Winston package execute the following in an interactive
+session.  As above I recommend you *not* execute this here (hence the
+=:eval never= header argument in the org file).
+
+#+BEGIN_SRC julia :eval never
+Pkg.add("Winston")
+#+END_SRC
+
+The Winston package has lots of dependencies and many of them must be
+built from source (on Ubuntu).
+
+*** Plotting with Winston
+
+To get up and running with plots in =julia= check out the many example
+graphs (with code) on the [[https://github.com/nolta/Winston.jl/blob/master/doc/examples.md][Winston examples page]]. As far as Org-mode is
+concerned, you can do plotting
+
+1. Interactively with a plot window,
+2. In-buffer with a =png=,
+3. Via export into LaTeX, HTML, Beamer...
+
+All three methods require setting up the plot object as a first step,
+after, of course, loading the Winston package.  Let's set up a simple
+plot object (do =C-c C-c= with point in the block):
+
+#+BEGIN_SRC julia :results silent
+using Winston
+x = linspace(0, 3pi, 100)
+c = cos(x)
+s = sin(x)
+p = FramedPlot();
+setattr(p, "title", "title!")
+setattr(p, "xlabel", L"\Sigma x^2_i")
+setattr(p, "ylabel", L"\Theta_i")
+add(p, FillBetween(x, c, x, s) )
+add(p, Curve(x, c, "color", "red") )
+add(p, Curve(x, s, "color", "blue") )
+#+END_SRC
+
+We did =:results silent= to omit the lengthy output from being
+inserted in the org buffer. So the hard part is finished -- we've
+created a plot object =p= which is now available to manipulate.
+
+To launch a plot window and look at the graph right now evaluate the
+following code block.
+
+#+BEGIN_SRC julia :exports code
+Winston.tk(p)
+#+END_SRC
+
+A plot should open in an X11 window with a pretty graph. Suppose
+instead we'd like to insert the graph in the org buffer right now. We
+need the inline-image display options described in section [[Org
+mode]]. Assuming you've done that, evaluate the following code block.
+
+#+BEGIN_SRC julia :results graphics :file images/julia1.png
+file(p, "images/julia1.png")
+#+END_SRC
+
+#+RESULTS:
+[[file:images/julia1.png]]
+
+The code block evaluates the command =file(p, "images/julia1.png")=,
+which tells =julia= to write the graph to a =.png= file (also
+available are =.pdf=, =.svg=, and =.eps=, though none of those can be
+inserted in the org buffer).  The header argument =:results graphics=
+tells org-mode that the results are going to be graphics (as opposed
+to elisp tables or STDOUT output) and the header argument =:file
+images/julia1.png= tells org to insert an link to the file
+=images/julia1.png= (just created by =julia=) right after the the code
+block.  This link is evaluated by =org-display-inline-images= which
+results in a =.png= in the org buffer.
+
+Notice that we had to specify the file name /twice/, once inside the
+code block and once as a header argument.  Some languages (such as R)
+only require one specification: the header argument.  The reason for
+this is simple: =ob-R.el= includes code which dynamically constructs a
+graphics device call behind the scenes, the call depending on the file
+extension in the =:file= header argument.  Such a thing is more
+difficult with =julia= because different graphics packages have
+markedly different device calls (for instance, =Gadfly= uses
+=SVG("filename", p)=).  Maybe someday the calls will stabilize and it
+will make sense to write wrapper code to do that automatically.  In
+the meantime, use whatever package you like and write the filename
+twice.
+
+We'll defer the export method discussion to the next section.
+
+** Fitting (generalized) linear models
+
+Douglas Bates has been putting together a =julia= package called GLM
+which already supports fitting generalized linear models to datasets.
+This, together with the RDatasets package, means there is already a
+bunch of stuff to keep a person busy.  Below is a modified example
+from the Multiple Regression chapter of IPSUR, translated to =julia=
+speak.
+
+First, we start =using= the packages we'll need.
+
+#+BEGIN_SRC julia :exports code
+using RDatasets, DataFrames, Distributions, GLM
+#+END_SRC
+
+#+RESULTS:
+
+Next we load the =trees= data frame from the RDatasets package (via
+the DataFrames package) and fit a linear model to the data.
+
+#+BEGIN_SRC julia :exports code :results silent
+trees = data("datasets", "trees")
+treeslm = lm(:(Girth ~ Height + Volume), trees)
+#+END_SRC
+
+There is a /ton/ of output from both the above commands which we omit
+here for the sake of brevity.  Most of it, though, is similar to to
+output we might see in an R session.  We can extract the model
+coefficients with the =coef= function:
+
+#+BEGIN_SRC julia
+coef(treeslm)
+#+END_SRC
+
+and we can finish by looking at a summary table similar to something
+like =summary(treeslm)= in R.
+
+#+BEGIN_SRC julia
+coeftable(treeslm)
+#+END_SRC
+
+* Export to other formats
+
+Sooner or later you will want to share your work with others, people
+who have not (yet) fully come to the realization that Emacs+Org is
+really quite better than sliced bread and also is destined to conquer
+the entire observable Universe.  Perhaps you'd like to make a
+presentation about how awesome =julia= is at a(n) (inter)national
+conference. Org-mode supports export to multiple formats.  Here we'll
+describe a few.  There has been work recently on a brand new exporter
+which hasn't yet made it to the official maintenance branch as of the
+time of this writing.  The following instructions apply to the new
+exporter, which is one of the reasons why it was important in the
+first section to update your Org-mode.
+
+** HTML
+
+This is the easiest. Insert the following in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(require 'ox-html)
+#+END_SRC
+
+Then open this file and execute =C-c C-e= to open the export
+dispatcher.  From there you have three options:
+
+1. =h H= exports as an HTML buffer (can be saved later),
+2. =h h= exports as an HTML file (saved in the working directory),
+3. =h o= exports as an HTML file and opens in a browser.
+
+That's it.  There are a lot of other cool things you can do; see the
+Org manual.  If you export to HTML then you are going to want your
+images (if any) to be =.png= or =.svg= files.
+
+** LaTeX
+
+This one is just as easy.  Insert the following in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(require 'ox-latex)
+#+END_SRC
+
+Then open this file and do
+
+1. =C-c C-e l L= to export as a LaTeX buffer,
+2. =C-c C-e l l= to export as a LaTeX file,
+3. =C-c C-e l p= to export as LaTeX and generate a PDF,
+3. =C-c C-e l o= to export as LaTeX, generate PDF, and open.
+
+There are a /ton/ of other LaTeX things to do.  See the Org manual.
+If you export to PDF then it's fine to use image formats =.png=,
+=.eps=, or =.pdf=, but the =.png= exports as a blurry raster image -
+use =.pdf= instead (or =.eps= for external plain LaTeX export).
+
+** Beamer
+
+Beamer is a special case unto itself. The short story is that you need
+the following in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(require 'ox-beamer)
+#+END_SRC
+
+Then also add an entry for the beamer class in your =.emacs=.  Here is
+a boilerplate version which you can customize to taste:
+
+#+BEGIN_SRC emacs-lisp :eval no-export
+(add-to-list 'org-latex-classes
+	     '("beamer"
+	       "\\documentclass[presentation]{beamer}
+        \[DEFAULT-PACKAGES]
+        \[PACKAGES]
+        \[EXTRA]"
+	       ("\\section{%s}" . "\\section*{%s}")
+	       ("\\subsection{%s}" . "\\subsection*{%s}")
+	       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+#+END_SRC
+
+Since beamer is such a special case I have tweaked a minimal =julia=
+beamer presentation in [[https://github.com/gjkerns/ob-julia/blob/master/pdf/ob-julia-beamer.pdf][Sample =julia= Presentation]] (the org file is
+[[https://github.com/gjkerns/ob-julia/blob/master/ob-julia-beamer.org][here]]). See there and the Org manual for more information.
+
+* Other things to mention
+
+- You can extract all of the =julia= source code (also known as
+  /tangling/ the Org document) with the keystrokes =C-c C-v t=.  This
+  will generate a =julia= script (with extension =.jl=) in the working
+  directory.  Note that this capability is turned off by default.  You
+  can activate it by adding the header argument =:tangle yes= to those
+  code blocks you'd like to tangle or doing a buffer-wide header
+  setting with the line =#+PROPERTY: tangle yes= near the top of the
+  org file.  See the Org manual for details.
+
+- You may have noticed that those =julia= code lines with no output
+  (for instance, lines with semicolons =;= at the end) generate an
+  empty line in the =#+RESULTS= below the code block.  Consequently,
+  the first time you evaluate a =julia= code block without having
+  previously initiated a =julia= session with =M-x julia= the
+  =#+RESULTS= will have an extra mystery empty line.  It is no
+  mystery.  The first statement executed by ESS when loading =julia=
+  is an =include= command.  That command has no output.  If that empty
+  line bothers you then execute the code block again; the mystery
+  empty line will disappear.
+
+- Be careful when executing code blocks with =:results value=.  Code
+  block evaluation in that case works by writing the =julia= commands
+  to an external file in the =/tmp= directory, evaluating the commands
+  with =julia=, writing the results to a comma-separated (=.csv=)
+  file, then reading the =.csv= file and converting the result to
+  =elisp= for insertion to the org buffer.  Not all object types are
+  supported by =julia= for writing to =.csv= files, in particular,
+  =1x1= matrices and arrays of ASCII characters are not supported
+  (yet).  If you try to evaluate code blocks in those cases (or any
+  other case where output to =.csv= is not supported) then you will
+  get an error.
+
+- After playing around with =julia= for a while you will notice that
+  instead of printing long arrays it will elide them with vertical
+  dots in the middle of the output which look similar to this \(
+  \vdots \) in the buffer.  It turns out that LaTeX does not like
+  those three dots because they correspond to a special character, and
+  the upshot is that your org file will not export to LaTeX
+  successfully.  One way around this is to explicitly declare that
+  special symbol in the LaTeX header. That is the reason for the
+  following line at the top of this org file.
+
+  : #+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
+
+- =ob-julia.el= does not support =rownames= and =colnames= like
+  =ob-R.el= does.

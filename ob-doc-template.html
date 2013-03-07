@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Julia Source Code Blocks in Org Mode</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="Julia Source Code Blocks in Org Mode"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="author" content="G. Jay Kerns"/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  #content { margin: 3em; }
+  #postamble p, a { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding:1em; }
+  div.figure p { text-align:center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x:auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted { background-color:#ffff00; }
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label
+    { font-size:10px; font-weight:bold; white-space:nowrap; }
+  .org-info-js_search-highlight
+    { background-color:#ffff00; color:#000000; font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Julia Source Code Blocks in Org Mode</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Introduction</a></li>
+<li><a href="#sec-2">Requirements and Setup</a>
+<ul>
+<li><a href="#sec-2-1">Julia</a></li>
+<li><a href="#sec-2-2">ESS - Emacs Speaks Statistics</a></li>
+<li><a href="#sec-2-3">Add-on packages</a></li>
+<li><a href="#sec-2-4">Org-mode</a></li>
+<li><a href="#sec-2-5"><code>ob-julia.el</code></a></li>
+</ul>
+</li>
+<li><a href="#sec-3">Org Mode Features for Julia Source Code Blocks</a>
+<ul>
+<li><a href="#sec-3-1">Header Arguments</a></li>
+<li><a href="#sec-3-2">Sessions</a></li>
+<li><a href="#sec-3-3">Result Types</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">Examples of Use</a>
+<ul>
+<li><a href="#sec-4-1">Graphics</a></li>
+<li><a href="#sec-4-2">Fitting (generalized) linear models</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">Export to other formats</a>
+<ul>
+<li><a href="#sec-5-1">HTML</a></li>
+<li><a href="#sec-5-2">LaTeX</a></li>
+<li><a href="#sec-5-3">Beamer</a></li>
+</ul>
+</li>
+<li><a href="#sec-6">Other things to mention</a></li>
+</ul>
+</div>
+</div>
+<div id="subtitle" style="float: center; text-align: center;">
+<p>
+Org Mode support for <a href="http://julialang.org/">Julia</a>
+</p>
+<p>
+<a href="http://julialang.org/">
+<img src="http://julialang.org/images/logo.png"/>
+</a>
+</p>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="http://julialang.org/">Julia</a> is a high-performance dynamic programming language for
+scientific and technical computing. Development started in 2009 and a
+free version was released in February, 2012.
+</p>
+
+<p>
+<code>Julia</code> is licensed under the MIT License. The external libraries
+<code>julia</code> uses include their own licenses.
+</p>
+</div>
+</div>
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Requirements and Setup</h2>
+<div class="outline-text-2" id="text-2">
+</div><div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1">Julia</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+You are going to need a working installation of <code>julia</code>.  The homepage
+on <a href="https://github.com/JuliaLang/julia">GitHub</a> has the pertinent links collected all in one place:
+</p>
+
+<ul class="org-ul">
+<li><b>Homepage:</b> <a href="http://julialang.org">http://julialang.org</a>
+</li>
+<li><b>Binaries:</b> <a href="http://code.google.com/p/julialang/downloads/list">http://code.google.com/p/julialang/downloads/list</a>
+</li>
+<li><b>Packages:</b> <a href="http://docs.julialang.org/en/latest/packages/packagelist/">http://docs.julialang.org/en/latest/packages/packagelist/</a>
+</li>
+<li><b>Mailing lists:</b> <a href="http://julialang.org/community/">http://julialang.org/community/</a>
+</li>
+<li><b>IRC:</b> <a href="http://webchat.freenode.net/?channels=julia">http://webchat.freenode.net/?channels=julia</a>
+</li>
+<li><b>Source code:</b> <a href="https://github.com/JuliaLang/julia">https://github.com/JuliaLang/julia</a>
+</li>
+<li><b>Git clone URL:</b> <code>git://github.com/JuliaLang/julia.git</code>
+</li>
+<li><b>Documentation:</b> <a href="http://julialang.org/manual/">http://julialang.org/manual/</a>
+</li>
+</ul>
+
+<p>
+<span style="text-decoration:underline;">Fair warning:</span> the initial install takes a <i>long time</i>, largely
+because julia has a lot of dependencies. Never fear, though;
+subsequent updates are brief.
+</p>
+</div>
+</div>
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2">ESS - Emacs Speaks Statistics</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+You are going to need a relavely bleeding-edge version of ESS since it
+is only due to recent ESS changes that this document is even possible.
+The place to look for the latest version of ESS is <a href="http://stat.ethz.ch/ESS/index.php?Section=download">here</a>.  At some
+point after installation you will likely put something like the
+following in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ess-site</span>)
+</pre>
+</div>
+
+<p>
+Once ESS is up and running you will need to tell it where the <code>julia</code>
+executable is. Edit the following and place it in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq  inferior-julia-program-name <span style="color: #8b2252;">"/path/to/julia-release-basic"</span>)
+</pre>
+</div>
+
+<p>
+After the above steps are complete then you should be able to start
+Emacs and launch an interactive <code>julia</code> session via <code>M-x julia</code>.  If
+you manage to get that settled then at this point you should be able
+to do everything in the <a href="https://raw.github.com/gjkerns/ob-julia/master/intro-julia.org">Introduction to Julia</a>.
+</p>
+</div>
+</div>
+<div id="outline-container-2-3" class="outline-3">
+<h3 id="sec-2-3">Add-on packages</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+There is a growing list of <a href="http://docs.julialang.org/en/release-0.1/packages/packagelist/">contibuted packages</a> which add to the base
+functionality of <code>julia</code>.  For example, several statistics packages
+were mentioned a few moths ago in a blog post by <a href="https://github.com/johnmyleswhite">John Myles White</a>
+entitled <a href="http://www.johnmyleswhite.com/notebook/2012/12/02/the-state-of-statistics-in-julia/">The State of Statistics in Julia</a>.  The instructions in the
+blog post are (already) a bit out-of-date; the currently recommended
+way to install the packages is to launch an interactive <code>julia</code>
+session and execute the following command:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"DataFrames"</span>, <span style="color: #8b2252;">"Distributions"</span>, <span style="color: #8b2252;">"GLM"</span>, <span style="color: #8b2252;">"MCMC"</span>, <span style="color: #8b2252;">"Optim"</span>, 
+        <span style="color: #8b2252;">"NHST"</span>, <span style="color: #8b2252;">"Clustering"</span>)
+</pre>
+</div>
+
+<p>
+I recommend you <b>not</b> execute the <code>Pkg.add</code> command here (if you do it
+in this buffer then you can't watch the download and install as it is
+happening).  As John notes, the <code>RDatasets</code> package takes a lot longer
+to download than the others.  Perhaps it would be wise to install it
+separately.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"RDatasets"</span>)
+</pre>
+</div>
+
+<p>
+You will notice both <code>Pkg.add</code> code blocks in the <code>.org</code> document have
+the <code>:eval never</code> header argument.
+</p>
+</div>
+</div>
+<div id="outline-container-2-4" class="outline-3">
+<h3 id="sec-2-4">Org-mode</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Since you have at least a passing familiarity with org-mode then you
+probably already have something like the following in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">org</span>)
+</pre>
+</div>
+
+<p>
+Another handy setting to have is
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(setq org-confirm-babel-evaluate nil)
+</pre>
+</div>
+
+<p>
+The following lines (either here or in your <code>.emacs</code>) permit inline
+image display in the Emacs buffer.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+(add-hook 'org-mode-hook 'org-display-inline-images)
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-2-5" class="outline-3">
+<h3 id="sec-2-5"><code>ob-julia.el</code></h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+You are going to want a copy of <code>ob-julia.el</code> to fully integrate
+<code>julia</code> with Org-mode.  At the present time <code>ob-julia.el</code> lives in the
+location <code>/path/to/org-mode/contrib/lisp</code> of bleeding edge Org.  You
+can find it and some other documents to get you started <a href="https://github.com/gjkerns/ob-julia">here</a>.  If you
+are working from the <code>.org</code> version of this document then it suffices
+to edit the code block below and evaluate it by <code>C-c C-c</code> with point
+in the code block.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(load <span style="color: #8b2252;">"/path/to/ob-julia.el"</span>)
+</pre>
+</div>
+
+<p>
+An alternative method is to put the following in your <code>.emacs</code> (these
+should go below the <code>(require 'org)</code> line):
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span style="color: #8b2252;">"/path/to/org-mode/contrib/lisp"</span>)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t) (julia . t)))
+</pre>
+</div>
+
+<p>
+You are all set.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Org Mode Features for Julia Source Code Blocks</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+If you've gotten this far then everything is installed in the right
+place and initialized properly. Now the fun begins.
+</p>
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1">Header Arguments</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Org-mode support of <code>julia</code> includes almost all of the usual header arguments.
+</p>
+</div>
+</div>
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2">Sessions</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+At the time of this writing, <code>ob-julia.el</code> only supports <code>:session</code>
+evaluation and does not support external process evaluation. This
+means that every <code>SRC julia</code> block should have a <code>:session SOMETHING</code>
+header argument.  Alternatively, you can put a buffer-wide header
+argument at the top of the org file, something like this:
+</p>
+
+<pre class="example">
+#+PROPERTY: session *julia*
+</pre>
+</div>
+</div>
+<div id="outline-container-3-3" class="outline-3">
+<h3 id="sec-3-3">Result Types</h3>
+<div class="outline-text-3" id="text-3-3">
+</div><div id="outline-container-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1">:results value</h4>
+<div class="outline-text-4" id="text-3-3-1">
+<p>
+The collection class of the <code>:results</code> header argument supports two
+mutually exclusive options: <code>value</code> and <code>output</code>.  When <code>:results
+value</code> is specified, Org takes the body of the source block, creates a
+function with that body, evaluates the function with <code>julia</code>, stores
+the result in a <code>.csv</code> file, then converts the <code>.csv</code> file to an
+<code>emacs-lisp</code> table, and finally inserts the table in the buffer.
+<i>Whew!</i> The bottom line?  Hit <code>C-c C-c</code> in the following code block.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">rand</span>(2,3)
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col class="right"/>
+
+<col class="right"/>
+
+<col class="right"/>
+</colgroup>
+<tbody>
+<tr>
+<td class="right">0.3715303800228136</td>
+<td class="right">0.21579188514924108</td>
+<td class="right">0.3291019424007178</td>
+</tr>
+
+<tr>
+<td class="right">0.659813851572707</td>
+<td class="right">0.20079077424458047</td>
+<td class="right">0.9476793913656847</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+As expected, the output of the command was a <code>2x3</code> array and Org
+inserted a table into the buffer.  This functionality is relatively
+powerful with other languages such as R, for instance, because
+<code>ob-R.el</code> works with <code>TAB</code> separated files instead and <code>read.table</code> in
+R supports reading of much more varied data types compared to
+<code>readcsv</code> in <code>julia</code> (at the present time).  Nevertheless, the
+functionality exists in <code>julia</code> and as time passes and <code>julia</code> adds
+more options we'll add more, too.
+</p>
+</div>
+</div>
+<div id="outline-container-3-3-2" class="outline-4">
+<h4 id="sec-3-3-2">:results output</h4>
+<div class="outline-text-4" id="text-3-3-2">
+<p>
+We will get a lot more mileage out of the <code>:results output</code> header
+argument. Every command in the src block body is evaluated by <code>julia</code>
+in turn and the results are placed in the buffer to be typeset in a
+verbatim environment.  This option is similar to typing commands in
+<code>julia</code> at an interactive session.  The analogy isn't exact, though,
+because at an interactive session it is one (1) command in, one (1)
+result out.  Multiple lines in an org SRC block in contrast have
+RESULTS which are lumped together.  Like this: (do <code>C-c C-c</code>)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 + 3
+<span style="color: #0000ff;">print</span>(<span style="color: #8b2252;">"hello"</span>)
+<span style="color: #0000ff;">sqrt</span>(5)
+</pre>
+</div>
+
+<pre class="example">
+5
+hello
+2.23606797749979
+</pre>
+
+<p>
+It is sometimes helpful to split up SRC blocks into smaller chunks so
+that buildup of RESULTS does not get out of hand.  Also, specific to
+<code>julia</code> we can sometimes put a semicolon at the end of the command to
+suppress output, like this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">2 + 3;
+<span style="color: #0000ff;">print</span>(<span style="color: #8b2252;">"hello"</span>);
+<span style="color: #0000ff;">sqrt</span>(5);
+</pre>
+</div>
+
+<pre class="example">
+hello
+</pre>
+
+<p>
+Notice the outer two results were suppressed, but not the middle one.
+</p>
+</div>
+</div>
+<div id="outline-container-3-3-3" class="outline-4">
+<h4 id="sec-3-3-3">:results graphics</h4>
+<div class="outline-text-4" id="text-3-3-3">
+<p>
+Org-mode supports <code>julia</code> graphics by way of the <code>:results graphics</code> header argument.  See the section "Examples of Use" for details.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4">Examples of Use</h2>
+<div class="outline-text-2" id="text-4">
+</div><div id="outline-container-4-1" class="outline-3">
+<h3 id="sec-4-1">Graphics</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+The most stable and fully featured of the <code>julia</code> graphics packages at
+the time of this writing appears to be the <a href="https://github.com/nolta/Winston.jl">Winston package</a>, although
+the <a href="https://github.com/dcjones/Gadfly.jl">Gadfly package</a> is also available and appears promising.  To
+install the Winston package execute the following in an interactive
+session.  As above I recommend you <b>not</b> execute this here (hence the
+<code>:eval never</code> header argument in the org file).
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Pkg.<span style="color: #0000ff;">add</span>(<span style="color: #8b2252;">"Winston"</span>)
+</pre>
+</div>
+
+<p>
+The Winston package has lots of dependencies and many of them must be
+built from source (on Ubuntu).
+</p>
+</div>
+
+<div id="outline-container-4-1-1" class="outline-4">
+<h4 id="sec-4-1-1">Plotting with Winston</h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+To get up and running with plots in <code>julia</code> check out the many example
+graphs (with code) on the <a href="https://github.com/nolta/Winston.jl/blob/master/doc/examples.md">Winston examples page</a>. As far as Org-mode is
+concerned, you can do plotting
+</p>
+
+<ol class="org-ol">
+<li>Interactively with a plot window,
+</li>
+<li>In-buffer with a <code>png</code>,
+</li>
+<li>Via export into LaTeX, HTML, Beamer&#x2026;
+</li>
+</ol>
+
+<p>
+All three methods require setting up the plot object as a first step,
+after, of course, loading the Winston package.  Let's set up a simple
+plot object (do <code>C-c C-c</code> with point in the block):
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">using Winston
+x = <span style="color: #0000ff;">linspace</span>(0, 3pi, 100)
+c = <span style="color: #0000ff;">cos</span>(x)
+s = <span style="color: #0000ff;">sin</span>(x)
+p = <span style="color: #0000ff;">FramedPlot</span>();
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"title"</span>, <span style="color: #8b2252;">"title!"</span>)
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"xlabel"</span>, L<span style="color: #8b2252;">"\Sigma x^2_i"</span>)
+<span style="color: #0000ff;">setattr</span>(p, <span style="color: #8b2252;">"ylabel"</span>, L<span style="color: #8b2252;">"\Theta_i"</span>)
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">FillBetween</span>(x, c, x, s) )
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">Curve</span>(x, c, <span style="color: #8b2252;">"color"</span>, <span style="color: #8b2252;">"red"</span>) )
+<span style="color: #0000ff;">add</span>(p, <span style="color: #0000ff;">Curve</span>(x, s, <span style="color: #8b2252;">"color"</span>, <span style="color: #8b2252;">"blue"</span>) )
+</pre>
+</div>
+
+<p>
+We did <code>:results silent</code> to omit the lengthy output from being
+inserted in the org buffer. So the hard part is finished &#x2013; we've
+created a plot object <code>p</code> which is now available to manipulate.
+</p>
+
+<p>
+To launch a plot window and look at the graph right now evaluate the
+following code block.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">Winston.<span style="color: #0000ff;">tk</span>(p)
+</pre>
+</div>
+
+<p>
+A plot should open in an X11 window with a pretty graph. Suppose
+instead we'd like to insert the graph in the org buffer right now. We
+need the inline-image display options described in section <i>Org
+mode</i>. Assuming you've done that, evaluate the following code block.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">file</span>(p, <span style="color: #8b2252;">"images/julia1.png"</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="images/julia1.png"  alt="julia1.png"/></p>
+<p></p>
+</div>
+
+<p>
+The code block evaluates the command <code>file(p, "images/julia1.png")</code>,
+which tells <code>julia</code> to write the graph to a <code>.png</code> file (also
+available are <code>.pdf</code>, <code>.svg</code>, and <code>.eps</code>, though none of those can be
+inserted in the org buffer).  The header argument <code>:results graphics</code>
+tells org-mode that the results are going to be graphics (as opposed
+to elisp tables or STDOUT output) and the header argument <code>:file
+images/julia1.png</code> tells org to insert an link to the file
+<code>images/julia1.png</code> (just created by <code>julia</code>) right after the the code
+block.  This link is evaluated by <code>org-display-inline-images</code> which
+results in a <code>.png</code> in the org buffer.
+</p>
+
+<p>
+Notice that we had to specify the file name <i>twice</i>, once inside the
+code block and once as a header argument.  Some languages (such as R)
+only require one specification: the header argument.  The reason for
+this is simple: <code>ob-R.el</code> includes code which dynamically constructs a
+graphics device call behind the scenes, the call depending on the file
+extension in the <code>:file</code> header argument.  Such a thing is more
+difficult with <code>julia</code> because different graphics packages have
+markedly different device calls (for instance, <code>Gadfly</code> uses
+<code>SVG("filename", p)</code>).  Maybe someday the calls will stabilize and it
+will make sense to write wrapper code to do that automatically.  In
+the meantime, use whatever package you like and write the filename
+twice.
+</p>
+
+<p>
+We'll defer the export method discussion to the next section.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-4-2" class="outline-3">
+<h3 id="sec-4-2">Fitting (generalized) linear models</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+Douglas Bates has been putting together a <code>julia</code> package called GLM
+which already supports fitting generalized linear models to datasets.
+This, together with the RDatasets package, means there is already a
+bunch of stuff to keep a person busy.  Below is a modified example
+from the Multiple Regression chapter of IPSUR, translated to <code>julia</code>
+speak.
+</p>
+
+<p>
+First, we start <code>using</code> the packages we'll need.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">using RDatasets, DataFrames, Distributions, GLM
+</pre>
+</div>
+
+<p>
+Next we load the <code>trees</code> data frame from the RDatasets package (via
+the DataFrames package) and fit a linear model to the data.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia">trees = <span style="color: #0000ff;">data</span>(<span style="color: #8b2252;">"datasets"</span>, <span style="color: #8b2252;">"trees"</span>)
+treeslm = <span style="color: #0000ff;">lm</span>(:(Girth ~ Height + Volume), trees)
+</pre>
+</div>
+
+<p>
+There is a <i>ton</i> of output from both the above commands which we omit
+here for the sake of brevity.  Most of it, though, is similar to to
+output we might see in an R session.  We can extract the model
+coefficients with the <code>coef</code> function:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">coef</span>(treeslm)
+</pre>
+</div>
+
+<p>
+and we can finish by looking at a summary table similar to something
+like <code>summary(treeslm)</code> in R.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-julia"><span style="color: #0000ff;">coeftable</span>(treeslm)
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5">Export to other formats</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Sooner or later you will want to share your work with others, people
+who have not (yet) fully come to the realization that Emacs+Org is
+really quite better than sliced bread and also is destined to conquer
+the entire observable Universe.  Perhaps you'd like to make a
+presentation about how awesome <code>julia</code> is at a(n) (inter)national
+conference. Org-mode supports export to multiple formats.  Here we'll
+describe a few.  There has been work recently on a brand new exporter
+which hasn't yet made it to the official maintenance branch as of the
+time of this writing.  The following instructions apply to the new
+exporter, which is one of the reasons why it was important in the
+first section to update your Org-mode.
+</p>
+</div>
+
+<div id="outline-container-5-1" class="outline-3">
+<h3 id="sec-5-1">HTML</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+This is the easiest. Insert the following in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ox-html</span>)
+</pre>
+</div>
+
+<p>
+Then open this file and execute <code>C-c C-e</code> to open the export
+dispatcher.  From there you have three options:
+</p>
+
+<ol class="org-ol">
+<li><code>h H</code> exports as an HTML buffer (can be saved later),
+</li>
+<li><code>h h</code> exports as an HTML file (saved in the working directory),
+</li>
+<li><code>h o</code> exports as an HTML file and opens in a browser.
+</li>
+</ol>
+
+<p>
+That's it.  There are a lot of other cool things you can do; see the
+Org manual.  If you export to HTML then you are going to want your
+images (if any) to be <code>.png</code> or <code>.svg</code> files.
+</p>
+</div>
+</div>
+<div id="outline-container-5-2" class="outline-3">
+<h3 id="sec-5-2">LaTeX</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+This one is just as easy.  Insert the following in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ox-latex</span>)
+</pre>
+</div>
+
+<p>
+Then open this file and do
+</p>
+
+<ol class="org-ol">
+<li><code>C-c C-e l L</code> to export as a LaTeX buffer,
+</li>
+<li><code>C-c C-e l l</code> to export as a LaTeX file,
+</li>
+<li><code>C-c C-e l p</code> to export as LaTeX and generate a PDF,
+</li>
+<li><code>C-c C-e l o</code> to export as LaTeX, generate PDF, and open.
+</li>
+</ol>
+
+<p>
+There are a <i>ton</i> of other LaTeX things to do.  See the Org manual.
+If you export to PDF then it's fine to use image formats <code>.png</code>,
+<code>.eps</code>, or <code>.pdf</code>, but the <code>.png</code> exports as a blurry raster image -
+use <code>.pdf</code> instead (or <code>.eps</code> for external plain LaTeX export).
+</p>
+</div>
+</div>
+<div id="outline-container-5-3" class="outline-3">
+<h3 id="sec-5-3">Beamer</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+Beamer is a special case unto itself. The short story is that you need
+the following in your <code>.emacs</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #a020f0;">require</span> '<span style="color: #008b8b;">ox-beamer</span>)
+</pre>
+</div>
+
+<p>
+Then also add an entry for the beamer class in your <code>.emacs</code>.  Here is
+a boilerplate version which you can customize to taste:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(add-to-list 'org-latex-classes
+             '(<span style="color: #8b2252;">"beamer"</span>
+               <span style="color: #8b2252;">"\\documentclass[presentation]{beamer}</span>
+<span style="color: #8b2252;">        \[DEFAULT-PACKAGES]</span>
+<span style="color: #8b2252;">        \[PACKAGES]</span>
+<span style="color: #8b2252;">        \[EXTRA]"</span>
+               (<span style="color: #8b2252;">"\\section{%s}"</span> . <span style="color: #8b2252;">"\\section*{%s}"</span>)
+               (<span style="color: #8b2252;">"\\subsection{%s}"</span> . <span style="color: #8b2252;">"\\subsection*{%s}"</span>)
+               (<span style="color: #8b2252;">"\\subsubsection{%s}"</span> . <span style="color: #8b2252;">"\\subsubsection*{%s}"</span>)))
+</pre>
+</div>
+
+<p>
+Since beamer is such a special case I have tweaked a minimal <code>julia</code>
+beamer presentation in <a href="https://github.com/gjkerns/ob-julia/blob/master/pdf/ob-julia-beamer.pdf">Sample <code>julia</code> Presentation</a> (the org file is
+<a href="https://github.com/gjkerns/ob-julia/blob/master/ob-julia-beamer.org">here</a>). See there and the Org manual for more information.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6">Other things to mention</h2>
+<div class="outline-text-2" id="text-6">
+<ul class="org-ul">
+<li>You can extract all of the <code>julia</code> source code (also known as
+<i>tangling</i> the Org document) with the keystrokes <code>C-c C-v t</code>.  This
+will generate a <code>julia</code> script (with extension <code>.jl</code>) in the working
+directory.  Note that this capability is turned off by default.  You
+can activate it by adding the header argument <code>:tangle yes</code> to those
+code blocks you'd like to tangle or doing a buffer-wide header
+setting with the line <code>#+PROPERTY: tangle yes</code> near the top of the
+org file.  See the Org manual for details.
+</li>
+
+<li>You may have noticed that those <code>julia</code> code lines with no output
+(for instance, lines with semicolons <code>;</code> at the end) generate an
+empty line in the <code>#+RESULTS</code> below the code block.  Consequently,
+the first time you evaluate a <code>julia</code> code block without having
+previously initiated a <code>julia</code> session with <code>M-x julia</code> the
+<code>#+RESULTS</code> will have an extra mystery empty line.  It is no
+mystery.  The first statement executed by ESS when loading <code>julia</code>
+is an <code>include</code> command.  That command has no output.  If that empty
+line bothers you then execute the code block again; the mystery
+empty line will disappear.
+</li>
+
+<li>Be careful when executing code blocks with <code>:results value</code>.  Code
+block evaluation in that case works by writing the <code>julia</code> commands
+to an external file in the <code>/tmp</code> directory, evaluating the commands
+with <code>julia</code>, writing the results to a comma-separated (<code>.csv</code>)
+file, then reading the <code>.csv</code> file and converting the result to
+<code>elisp</code> for insertion to the org buffer.  Not all object types are
+supported by <code>julia</code> for writing to <code>.csv</code> files, in particular,
+<code>1x1</code> matrices and arrays of ASCII characters are not supported
+(yet).  If you try to evaluate code blocks in those cases (or any
+other case where output to <code>.csv</code> is not supported) then you will
+get an error.
+</li>
+
+<li>After playing around with <code>julia</code> for a while you will notice that
+instead of printing long arrays it will elide them with vertical
+dots in the middle of the output which look similar to this \(
+  \vdots \) in the buffer.  It turns out that LaTeX does not like
+those three dots because they correspond to a special character, and
+the upshot is that your org file will not export to LaTeX
+successfully.  One way around this is to explicitly declare that
+special symbol in the LaTeX header. That is the reason for the
+following line at the top of this org file.
+
+<pre class="example">
+#+LaTeX_HEADER: \DeclareUnicodeCharacter{22EE}{\vdots}
+</pre>
+</li>
+
+<li><code>ob-julia.el</code> does not support <code>rownames</code> and <code>colnames</code> like
+  <code>ob-R.el</code> does.
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble">
+<p class="date">Date: </p>
+<p class="author">Author : G. Jay Kerns</p>
+<p class="creator">Generated by <a href="http://orgmode.org">Org</a> mode 7.9.3f in <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.50.1.</p>
+<a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
+</div>
+</body>
+</html>
