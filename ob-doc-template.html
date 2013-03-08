@@ -763,6 +763,13 @@ coefficients with the <code>coef</code> function:
 </pre>
 </div>
 
+<pre class="example">
+3-element Float64 Array:
+ 10.8164   
+ -0.0454835
+  0.19518
+</pre>
+
 <p>
 and we can finish by looking at a summary table similar to something
 like <code>summary(treeslm)</code> in R.
@@ -773,6 +780,14 @@ like <code>summary(treeslm)</code> in R.
 <pre class="src src-julia"><span style="color: #0000ff;">coeftable</span>(treeslm)
 </pre>
 </div>
+
+<pre class="example">
+3x4 DataFrame:
+          Estimate Std.Error  t value   Pr(&gt;|t|)
+[1,]       10.8164    1.9732  5.48165 7.44691e-6
+[2,]    -0.0454835 0.0282621 -1.60935   0.118759
+[3,]       0.19518 0.0109553  17.8161 8.2233e-17
+</pre>
 </div>
 </div>
 </div>
