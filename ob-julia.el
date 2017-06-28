@@ -102,7 +102,9 @@ This function is called by `org-babel-execute-src-block'."
 
 (defun org-babel-variable-assignments:julia (params)
   "Return list of julia statements assigning the block's variables."
-  (let ((vars (mapcar #'cdr (org-babel-get-header params :var))))
+  (let ((vars (if (fboundp 'org-babel-get-header)
+                  (mapcar #'cdr (org-babel-get-header params :var))
+                (mapcar #'cdr (org-babel--get-vars params)))))
     (mapcar
      (lambda (pair)
        (org-babel-julia-assign-elisp
