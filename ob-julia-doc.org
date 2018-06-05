@@ -45,29 +45,18 @@ subsequent updates are brief.
 
 ** Julia on macOS
 
-If you use macOS, you need to tell Emacs where to find =julia= because the GUI application does not start in a shell (see the answers and comments on [[this thread]] for more details). You'll need to add either of the following lines to =~/.bashrc=, which is loaded by all shells, unlike =~/.bash_profile=, which is loaded only by the login shell.
+If you use macOS, you need to tell Emacs where to find =julia= because the GUI application does not start in a shell (see the answers and comments on [[https://stackoverflow.com/questions/415403/whats-the-difference-between-bashrc-bash-profile-and-environment][this thread]] for more details). You'll need to add either of the following lines to =~/.bashrc=, which is loaded by all shells, unlike =~/.bash_profile=, which is loaded only by the login shell.
 
-Add an alias to the Julia executable with this line in =~/.bashrc=:
-#+BEGIN_SRC bash :eval never
-alias julia="/path/to/julia/binary"
-#+END_SRC
-
-Alternatively, add the Julia directory to the PATH with this line in =~/.bashrc=:
+Add the Julia directory to the PATH with this line in =~/.bashrc=:
 #+BEGIN_SRC bash :eval never
 export PATH="/path/to/julia/directory"
 #+END_SRC
 
-If you installed Julia in the default location, these become:
-
-#+BEGIN_SRC bash :eval never
-alias julia="/Applications/Julia-0.6.app/Contents/Resources/julia/bin/julia"
-#+END_SRC
+If you installed Julia in the default location, it becomes:
 
 #+BEGIN_SRC bash :eval never
 export PATH="Applications/Julia-0.6.app/Contents/Resources/julia/bin:$PATH"
 #+END_SRC
-
-Notice that the method with an alias points to the executable, the method with PATH points to the directory.
 
 ** ESS - Emacs Speaks Statistics
 
