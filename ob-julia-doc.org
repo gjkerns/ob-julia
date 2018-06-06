@@ -55,7 +55,7 @@ export PATH="/path/to/julia/directory"
 If you installed Julia in the default location, it becomes:
 
 #+BEGIN_SRC bash :eval never
-export PATH="Applications/Julia-0.6.app/Contents/Resources/julia/bin:$PATH"
+export PATH="/Applications/Julia-0.6.app/Contents/Resources/julia/bin:$PATH"
 #+END_SRC
 
 ** ESS - Emacs Speaks Statistics
