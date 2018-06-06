@@ -43,6 +43,21 @@ _Fair warning:_ the initial install takes a /long time/, largely
 because julia has a lot of dependencies. Never fear, though;
 subsequent updates are brief.
 
+** Julia on macOS
+
+If you use macOS, you need to tell Emacs where to find =julia= because the GUI application does not start in a shell (see the answers and comments on [[https://stackoverflow.com/questions/415403/whats-the-difference-between-bashrc-bash-profile-and-environment][this thread]] for more details). You'll need to add either of the following lines to =~/.bashrc=, which is loaded by all shells, unlike =~/.bash_profile=, which is loaded only by the login shell.
+
+Add the Julia directory to the PATH with this line in =~/.bashrc=:
+#+BEGIN_SRC bash :eval never
+export PATH="/path/to/julia/directory"
+#+END_SRC
+
+If you installed Julia in the default location, it becomes:
+
+#+BEGIN_SRC bash :eval never
+export PATH="/Applications/Julia-0.6.app/Contents/Resources/julia/bin:$PATH"
+#+END_SRC
+
 ** ESS - Emacs Speaks Statistics
 
 You are going to need a relavely bleeding-edge version of ESS since it
