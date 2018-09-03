@@ -77,7 +77,10 @@ This function is called by `org-babel-execute-src-block'."
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
 		  (cdr (assoc :rowname-names params)) rownames-p)))))
-      (if graphics-file nil result))))
+      (if graphics-file nil (replace-regexp-in-string
+                             "\\(\n\r?\\)\\{3,\\}"
+                             "\n"
+                             result)))))
 
 (defun org-babel-prep-session:julia (session params)
   "Prepare SESSION according to the header arguments specified in PARAMS."
