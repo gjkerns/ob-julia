@@ -77,7 +77,7 @@ This function is called by `org-babel-execute-src-block'."
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
 		  (cdr (assoc :rowname-names params)) rownames-p)))))
-      (if graphics-file nil (if (sequencep result)
+      (if graphics-file nil (if (and result (sequencep result))
                                 (org-babel-normalize-newline result)
                               result)))))
 
