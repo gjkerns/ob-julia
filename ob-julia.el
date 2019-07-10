@@ -23,14 +23,56 @@
     (results             . ((file list vector table scalar verbatim)
 			    (raw org html latex code pp wrap)
 			    (replace silent append prepend)
-			    (output value graphics))))
+			    (output value))))
   "julia-specific header arguments.")
 
 (add-to-list 'org-babel-tangle-lang-exts '("julia" . "jl"))
 
+(defvar org-babel-julia-setup
+  "# org-mode
+import Base.display, Base.show, Base.Multimedia.showable
+struct OrgEmacs <: AbstractDisplay
+    outfile::String
+end
+display(d::OrgEmacs, x) = display(d::OrgEmacs, MIME(\"text/org\"), x)
+function display(d::OrgEmacs, ::MIME\"text/org\", x)
+    open(d.outfile, \"w\") do f
+        show(f, MIME(\"text/org\"), x)
+    end
+end
+# Generic fallback
+show(io::IO, ::MIME\"text/org\", i) = show(io, i)
+# Overload types
+show(io::IO, ::MIME\"text/org\", ::Nothing) = show(io, \"\")
+function show(io::IO, ::MIME\"text/org\", i::Array{T,2}) where T <: Any
+    out = eachrow(i) |> x -> join([join(l, \",\") for l in x], \"\\n\")
+    print(io, out)
+end
+
+function org_reload()
+    \"Defines show method based on loaded packages\"
+    let pkg = :DataFrames
+        if isdefined(Main, pkg) && isa(getfield(Main, pkg), Module)
+            @eval function show(io::IO, ::MIME\"text/org\", d::DataFrame)
+                out = '|' * join(string.(names(d)), '|')
+                out *= \"\\n|\" * repeat(\"-|\", length(names(d))) * '\\n'
+                out *= join(['|' * join(x, '|') * '|' for x in eachrow(d) .|> collect], '\\n')
+                print(io, out)
+            end
+        end
+    end
+end
+")
+
+(defcustom org-babel-julia-table-as-dict nil
+  "If t, tables are imported as Dictionary, else as NamedTuple.
+In both cases, if you use DataFrames you can import pass them to
+`DataFrame'.
+Importing NamedTuple is slower (more data) but they preserve the column order.")
+
 (defvar org-babel-default-header-args:julia '())
 
-(defcustom org-babel-julia-command inferior-julia-program-name
+(defcustom org-babel-julia-command "julia"
   "Name of command to use for executing julia code."
   :group 'org-babel
   :version "24.3"
@@ -42,19 +84,13 @@
     (when (and session (string-match "^\\*\\(.+?\\)\\*$" session))
       (save-match-data (org-babel-julia-initiate-session session nil)))))
 
-(defun org-babel-expand-body:julia (body params &optional graphics-file)
+(defun org-babel-expand-body:julia (body params)
   "Expand BODY according to PARAMS, return the expanded body."
-  (let ((graphics-file
-	 (or graphics-file (org-babel-julia-graphical-output-file params))))
-    (mapconcat
-     #'identity
-     ((lambda (inside)
-	(if graphics-file
-            inside 
-	  inside)
-	)
-      (append (org-babel-variable-assignments:julia params)
-	      (list body))) "\n")))
+  (mapconcat
+       #'identity
+       ((lambda (inside) inside)
+	(append (org-babel-variable-assignments:julia params)
+		(list body))) "\n"))
 
 (defun org-babel-execute:julia (body params)
   "Execute a block of julia code.
@@ -62,22 +98,23 @@ This function is called by `org-babel-execute-src-block'."
   (save-excursion
     (let* ((result-params (cdr (assoc :result-params params)))
 	   (result-type (cdr (assoc :result-type params)))
+	   (output-file (cdr (assoc :file params)))
            (session (org-babel-julia-initiate-session
 		     (cdr (assoc :session params)) params))
 	   (colnames-p (cdr (assoc :colnames params)))
 	   (rownames-p (cdr (assoc :rownames params)))
-	   (graphics-file (org-babel-julia-graphical-output-file params))
-	   (full-body (org-babel-expand-body:julia body params graphics-file))
+	   (full-body (org-babel-expand-body:julia body params))
 	   (result
 	    (org-babel-julia-evaluate
 	     session full-body result-type result-params
+	     output-file
 	     (or (equal "yes" colnames-p)
 		 (org-babel-pick-name
 		  (cdr (assoc :colname-names params)) colnames-p))
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
 		  (cdr (assoc :rowname-names params)) rownames-p)))))
-      (if graphics-file nil result))))
+      result)))
 
 (defun org-babel-prep-session:julia (session params)
   "Prepare SESSION according to the header arguments specified in PARAMS."
@@ -86,7 +123,8 @@ This function is called by `org-babel-execute-src-block'."
     (org-babel-comint-in-buffer session
       (mapc (lambda (var)
               (end-of-line 1) (insert var) (comint-send-input nil t)
-              (org-babel-comint-wait-for-output session)) var-lines))
+              (org-babel-comint-wait-for-output session))
+	    var-lines))
     session))
 
 (defun org-babel-load-session:julia (session body params)
@@ -99,56 +137,78 @@ This function is called by `org-babel-execute-src-block'."
       buffer)))
 
 ;; helper functions
+(defun org-babel-julia-assign-to-var (name value)
+  "Assign `VALUE' to a variable called `NAME'."
+  (format "%s = %S;" name value))
+
+(defun org-babel-julia-assign-to-var-or-array (var)
+  ""
+  (if (and (listp (cdr var)) (cddr var))
+      (org-babel-julia-assign-to-array (car var) (cdr var))
+    (org-babel-julia-assign-to-var (car var) (cdr var))))
+
+(defun org-babel-julia-assign-to-array (name matrix)
+  "Create a Matrix (Vector{Any,2} from `MATRIX' and assign it to `NAME'"
+  (format "%s = [%s];" name (mapconcat (lambda (line)
+  		 (mapconcat (lambda (val)
+  			      (format "%S" val))
+  			    line
+  			    " "))
+  	       matrix
+  	       ";\n ")))
+
+(defun org-babel-julia-assign-to-dict (name column-names values)
+  "Create a Dict with lists as values.
+Create a Dict where keys are Symbol from `COLUMN-NAMES',
+values are Array taken from `VALUES', and assign it to `NAME'"
+  (format "%s = Dict(%s);" name
+	  (mapconcat
+	   (lambda (i)
+	     (format ":%s => [%s]" (nth i column-names)
+		     (mapconcat
+		      (lambda (line) (format "%S" (nth i line)))
+		      values
+		      ",")))
+	   (number-sequence 0 (1- (length column-names)))
+	   ",\n")))
+
+(defun org-babel-julia-assign-to-named-tuple (name column-names values)
+  "Create a Dict with lists as values.
+Create a list of NamedTuple where keys are taken from `COLUMN-NAMES',
+values are taken from `VALUES', and assign it to `NAME'"
+  (format "%s = [%s];" name
+	  (mapconcat
+	   (lambda (i)
+	     (concat
+	      "(" (mapconcat
+		   (lambda (j)
+		     (format "%s=%S"
+			     (nth j column-names)
+			     (nth j (nth i values))))
+		   (number-sequence 0 (1- (length column-names)))
+		   ",")
+	      ")"))
+	   (number-sequence 0 (1- (length values))) "\n")))
 
 (defun org-babel-variable-assignments:julia (params)
   "Return list of julia statements assigning the block's variables."
-  (let ((vars (if (fboundp 'org-babel-get-header)
-                  (mapcar #'cdr (org-babel-get-header params :var))
-                (mapcar #'cdr (org-babel--get-vars params)))))
-    (mapcar
-     (lambda (pair)
-       (org-babel-julia-assign-elisp
-	(car pair) (cdr pair)
-	(equal "yes" (cdr (assoc :colnames params)))
-	(equal "yes" (cdr (assoc :rownames params)))))
-     (mapcar
-      (lambda (i)
-	(cons (car (nth i vars))
-	      (org-babel-reassemble-table
-	       (cdr (nth i vars))
-	       (cdr (nth i (cdr (assoc :colname-names params))))
-	       (cdr (nth i (cdr (assoc :rowname-names params)))))))
-      (org-number-sequence 0 (1- (length vars)))))))
-
-(defun org-babel-julia-quote-csv-field (s)
-  "Quote field S for export to julia."
-  (if (stringp s)
-      (concat "\"" (mapconcat 'identity (split-string s "\"") "\"\"") "\"")
-    (format "%S" s)))
-
-(defun org-babel-julia-assign-elisp (name value colnames-p rownames-p)
-  "Construct julia code assigning the elisp VALUE to a variable named NAME."
-  (if (listp value)
-      (let ((max (apply #'max (mapcar #'length (org-remove-if-not
-						#'sequencep value))))
-	    (min (apply #'min (mapcar #'length (org-remove-if-not
-						#'sequencep value))))
-	    (transition-file (org-babel-temp-file "julia-import-")))
-        ;; ensure VALUE has an orgtbl structure (depth of at least 2)
-        (unless (listp (car value)) (setq value (list value)))
-        (with-temp-file transition-file
-          (insert
-	   (orgtbl-to-csv value '(:fmt org-babel-julia-quote-csv-field))
-	   "\n"))
-	(let ((file (org-babel-process-file-name transition-file 'noquote))
-	      (header (if (or (eq (nth 1 value) 'hline) colnames-p)
-			  "TRUE" "FALSE"))
-	      (row-names (if rownames-p "1" "NULL")))
-	  (if (= max min)
-	      (format "%s = readcsv(\"%s\")" name file)
-	    (format "%s = readcsv(\"%s\")"
-		    name file))))
-    (format "%s = %s" name (org-babel-julia-quote-csv-field value))))
+  (let ((colnames (cdr (assoc :colname-names params)))
+	(vars (org-babel--get-vars params)))
+    (mapcar (lambda (i)
+	      (let* ((var (nth i vars))
+		     (column-names
+		      (car (seq-filter
+			    (lambda (cols)
+			      (eq (car cols) (car var)))
+			    colnames))))
+		(if column-names
+		    (if org-babel-julia-table-as-dict
+			(org-babel-julia-assign-to-dict
+			 (car var) (cdr column-names) (cdr var))
+			(org-babel-julia-assign-to-named-tuple
+			 (car var) (cdr column-names) (cdr var)))
+		  (org-babel-julia-assign-to-var-or-array var))))
+	    (number-sequence 0 (1- (length vars))))))
 
 (defvar ess-ask-for-ess-directory) ; dynamically scoped
 
@@ -179,40 +239,34 @@ current code buffer."
 	(process-name (get-buffer-process session)))
   (ess-make-buffer-current))
 
-(defun org-babel-julia-graphical-output-file (params)
-  "Name of file to which julia should send graphical output."
-  (and (member "graphics" (cdr (assq :result-params params)))
-       (cdr (assq :file params))))
-
 (defvar org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
-(defvar org-babel-julia-write-object-command "writecsv(\"%s\",%s)")
-
-;; The following was a very complicated write object command
-;; The replacement needs to add error catching
-;(defvar org-babel-julia-write-object-command "{function(object,transfer.file){object;invisible(if(inherits(try({tfile<-tempfile();write.table(object,file=tfile,sep=\"\\t\",na=\"nil\",row.names=%s,col.names=%s,quote=FALSE);file.rename(tfile,transfer.file)},silent=TRUE),\"try-error\")){if(!file.exists(transfer.file))file.create(transfer.file)})}}(object=%s,transfer.file=\"%s\")")
+(defvar org-babel-julia-write-object-command "org_reload();display(OrgEmacs(\"%s\"),%s)")
+(defvar org-babel-julia-write-object-with-fileio-command "using FileIO;save(\"%s\",%s)")
 
 (defun org-babel-julia-evaluate
-  (session body result-type result-params column-names-p row-names-p)
+    (session body result-type result-params output-file column-names-p row-names-p)
   "Evaluate julia code in BODY."
   (if session
       (org-babel-julia-evaluate-session
-       session body result-type result-params column-names-p row-names-p)
+       session body result-type result-params output-file column-names-p row-names-p)
     (org-babel-julia-evaluate-external-process
-     body result-type result-params column-names-p row-names-p)))
+     body result-type result-params output-file column-names-p row-names-p)))
 
 (defun org-babel-julia-evaluate-external-process
-  (body result-type result-params column-names-p row-names-p)
+    (body result-type result-params output-file column-names-p row-names-p)
   "Evaluate BODY in external julia process.
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
   (case result-type
     (value
-     (let ((tmp-file (org-babel-temp-file "julia-")))
+     (let ((tmp-file (or output-file (org-babel-temp-file "julia-"))))
        (org-babel-eval org-babel-julia-command
-		       (format org-babel-julia-write-object-command
+		       (format (if output-file
+				   org-babel-julia-write-object-with-fileio-command
+				 org-babel-julia-write-object-command)
 			       (org-babel-process-file-name tmp-file 'noquote)
 			       (format "begin\n%s\nend" body)))
        (org-babel-julia-process-value-result
@@ -222,10 +276,11 @@ last statement in BODY, as elisp."
 	    (buffer-string))
 	  (org-babel-import-elisp-from-file tmp-file '(4)))
 	column-names-p)))
-    (output (org-babel-eval org-babel-julia-command body))))
+    (output (org-babel-eval org-babel-julia-command
+			    body))))
 
 (defun org-babel-julia-evaluate-session
-  (session body result-type result-params column-names-p row-names-p)
+    (session body result-type result-params output-file column-names-p row-names-p)
   "Evaluate BODY in SESSION.
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
@@ -238,10 +293,12 @@ last statement in BODY, as elisp."
 	      (process-name (get-buffer-process session)))
 	     (ess-eval-visibly-p nil))
 	 (ess-eval-buffer nil)))
-     (let ((tmp-file (org-babel-temp-file "julia-")))
+     (let ((tmp-file (or output-file (org-babel-temp-file "julia-"))))
        (org-babel-comint-eval-invisibly-and-wait-for-file
 	session tmp-file
-	(format org-babel-julia-write-object-command
+	(format (if output-file
+		    org-babel-julia-write-object-with-fileio-command
+		  org-babel-julia-write-object-command)
 		(org-babel-process-file-name tmp-file 'noquote) "ans"))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
