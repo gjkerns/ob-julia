@@ -206,8 +206,8 @@ current code buffer."
 (defvar org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
-(defvar org-babel-julia-write-object-command "org_reload();display(OrgEmacs(\"%s\"),%s)")
-(defvar org-babel-julia-write-object-with-fileio-command "using FileIO;save(\"%s\",%s)")
+(defvar org-babel-julia-write-object-command "org_reload();%s(OrgEmacs(\"%s\"),%s)")
+(defvar org-babel-julia-write-object-with-fileio-command "using FileIO;%s(\"%s\",%s)")
 
 (defun org-babel-julia-evaluate
     (session body result-type result-params output-file column-names-p row-names-p)
@@ -232,7 +232,7 @@ last statement in BODY, as elisp."
 				   org-babel-julia-write-object-with-fileio-command
 				 org-babel-julia-write-object-command)
 			       (org-babel-process-file-name tmp-file 'noquote)
-			       (format "begin\n%s\nend" body)))
+			       body))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
@@ -251,19 +251,26 @@ string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
   (case result-type
     (value
-     (with-temp-buffer
-       (insert (org-babel-chomp body))
-       (let ((ess-local-process-name
-	      (process-name (get-buffer-process session)))
-	     (ess-eval-visibly-p nil))
-	 (ess-eval-buffer nil)))
-     (let ((tmp-file (or output-file (org-babel-temp-file "julia-"))))
+     ;; (with-temp-buffer
+     ;;   (insert (org-babel-chomp body))
+     ;;   (let ((ess-local-process-name
+     ;; 	      (process-name (get-buffer-process session)))
+     ;; 	     (ess-eval-visibly-p nil))
+     ;; 	 (ess-eval-buffer nil)))
+     (let ((tmp-file (or output-file (org-babel-temp-file "julia-")))
+	   (suppress (string-equal (substring (string-trim-right body) -1) ";")))
        (org-babel-comint-eval-invisibly-and-wait-for-file
 	session tmp-file
 	(format (if output-file
 		    org-babel-julia-write-object-with-fileio-command
 		  org-babel-julia-write-object-command)
-		(org-babel-process-file-name tmp-file 'noquote) "ans"))
+		(if suppress "suppress" "display")
+		(org-babel-process-file-name tmp-file 'noquote)
+		;; (format "try\n%s\ncatch e\ne\nfinally\nend" body)
+		;; (format "begin\n%s\nend" body)
+		(format "try\n@eval(%s)\ncatch e\ndisplay(OrgEmacs(\"%s\"),e)\nend"
+			body tmp-file)
+		))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
