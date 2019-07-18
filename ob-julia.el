@@ -28,42 +28,6 @@
 
 (add-to-list 'org-babel-tangle-lang-exts '("julia" . "jl"))
 
-(defvar org-babel-julia-setup
-  "# org-mode
-import Base.display, Base.show, Base.Multimedia.showable
-struct OrgEmacs <: AbstractDisplay
-    outfile::String
-end
-display(d::OrgEmacs, x) = display(d::OrgEmacs, MIME(\"text/org\"), x)
-function display(d::OrgEmacs, ::MIME\"text/org\", x)
-    open(d.outfile, \"w\") do f
-        show(f, MIME(\"text/org\"), x)
-    end
-end
-# Generic fallback
-show(io::IO, ::MIME\"text/org\", i) = show(io, i)
-# Overload types
-show(io::IO, ::MIME\"text/org\", ::Nothing) = show(io, \"\")
-function show(io::IO, ::MIME\"text/org\", i::Array{T,2}) where T <: Any
-    out = eachrow(i) |> x -> join([join(l, \",\") for l in x], \"\\n\")
-    print(io, out)
-end
-
-function org_reload()
-    \"Defines show method based on loaded packages\"
-    let pkg = :DataFrames
-        if isdefined(Main, pkg) && isa(getfield(Main, pkg), Module)
-            @eval function show(io::IO, ::MIME\"text/org\", d::DataFrame)
-                out = '|' * join(string.(names(d)), '|')
-                out *= \"\\n|\" * repeat(\"-|\", length(names(d))) * '\\n'
-                out *= join(['|' * join(x, '|') * '|' for x in eachrow(d) .|> collect], '\\n')
-                print(io, out)
-            end
-        end
-    end
-end
-")
-
 (defcustom org-babel-julia-table-as-dict nil
   "If t, tables are imported as Dictionary, else as NamedTuple.
 In both cases, if you use DataFrames you can import pass them to
