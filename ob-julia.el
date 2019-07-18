@@ -26,6 +26,89 @@
 			    (output value))))
   "julia-specific header arguments.")
 
+(defcustom org-babel-julia-startup-script
+  "@info \"Loading\"
+# org-mode
+import Base.display, Base.show, Base.Multimedia.showable
+struct OrgEmacs <: AbstractDisplay
+    outfile::String
+end
+display(d::OrgEmacs, ::Nothing) = display(d::OrgEmacs, MIME(\"text/org\"), \"\")
+display(d::OrgEmacs, x) = display(d::OrgEmacs, MIME(\"text/org\"), x)
+function display(d::OrgEmacs, ::MIME\"text/org\", x)
+    tmpfile, io = mktemp()
+    show(io, MIME(\"text/org\"), x); close(io)
+    mv(tmpfile, d.outfile, force = true)
+    nothing
+end
+suppress(d::OrgEmacs, x) = display(d, \"\")
+\"Used to suppress FileIO calls\"
+suppress(d::String, x) = display(d, \"\")
+\"Save FileIO\"
+display(fn::String, x) = begin; save(fn, x); nothing; end
+
+
+# Generic fallback
+show(io::IO, ::MIME\"text/org\", i) = show(io, i)
+# Overload types
+show(io::IO, ::MIME\"text/org\", t::Tuple) = print(io, join(t, ','))
+function show(io::IO, ::MIME\"text/org\", t::NamedTuple)
+    print(io, join(string.(keys(t)), ','))
+    print(io, join(t, ','))
+end
+show(io::IO, ::MIME\"text/org\", ::Nothing) = print(io, \"\")
+show(io::IO, ::MIME\"text/org\", a::Array{T,1}) where T <: Any = print(io, join(a, \",\"))
+function show(io::IO, ::MIME\"text/org\", i::Array{T,2}) where T <: Any
+    out = eachrow(i) |> x -> join([join(l, \",\") for l in x], \"\n\")
+    print(io, out)
+end
+show(io::IO, ::MIME\"text/org\", e::Exception) = print(io, string(\"ERROR: \"), e)
+
+function org_reload()
+    \"Defines show method based on loaded packages\"
+    let pkg = :DataFrames
+        if isdefined(Main, pkg) && isa(getfield(Main, pkg), Module)
+            @eval function show(io::IO, ::MIME\"text/org\", d::DataFrame)
+                out = join(string.(names(d)), ',') * '\n'
+                out *= join([join(x, ',') for x in eachrow(d) .|> collect],
+                            '\n')
+                print(io, out)
+            end
+        end
+    end
+    let pkg = :NamedArrays
+        if isdefined(Main, pkg) && isa(getfield(Main, pkg), Module)
+            @eval function show(io::IO, ::MIME\"text/org\", na::NamedArray{T,2} where
+                                T <: Any)
+                n = names(na)
+                a = collect(na)
+                print(io, join(string.(na.dimnames), \"/\") * ',')
+                print(io, join(n[2], ',') * '\n')
+                print(io, join([join([string(n[1][i], ','),
+                                      join([a[i,j]
+                                      for j in 1:size(na,2)
+                                      ], ',')])
+                                for i in 1:size(na,1)
+                                ],
+                               '\n'))
+            end
+            @eval function show(io::IO, ::MIME\"text/org\", na::NamedArray{T,1} where T <: Any)
+                n = names(na)
+                a = collect(na)
+                print(io, string(na.dimnames[1], ',', '\n'))
+                print(io, join([join([n[1][i], a[i]], ',')
+                                for i in 1:length(n[1])
+                                ], '\n'))
+            end
+        end
+    end
+end"
+  "Julia code run at startup.
+Must define the `OrgEmacs' Abstractdisplay and some display function"
+  :group 'org-babel
+  :version "24.3"
+  :type 'string)
+
 (add-to-list 'org-babel-tangle-lang-exts '("julia" . "jl"))
 
 (defcustom org-babel-julia-table-as-dict nil
@@ -193,6 +276,7 @@ values are taken from `VALUES', and assign it to `NAME'"
 	     (if (stringp session)
 		 session
 	       (buffer-name))))
+	  (ess-send-string (ess-get-process) org-babel-julia-startup-script nil)
 	  (current-buffer))))))
 
 (defun org-babel-julia-associate-session (session)
@@ -226,13 +310,31 @@ string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
   (case result-type
     (value
-     (let ((tmp-file (or output-file (org-babel-temp-file "julia-"))))
+     (let* ((tmp-file (or output-file (org-babel-temp-file "julia-")))
+	   (suppress (string-equal (substring (string-trim-right body) -1) ";")))
        (org-babel-eval org-babel-julia-command
-		       (format (if output-file
-				   org-babel-julia-write-object-with-fileio-command
-				 org-babel-julia-write-object-command)
-			       (org-babel-process-file-name tmp-file 'noquote)
-			       body))
+		       (org-babel-eval "julia" (concat
+			 org-babel-julia-startup-script
+			 "\n"
+			 (format
+			  "fn, io = mktemp(); close(io)
+pushdisplay(OrgEmacs(fn));
+try
+    @eval(begin
+        %s
+    end)
+catch e
+    e
+finally
+    popdisplay(OrgEmacs);
+end
+read(fn, String)"
+			  ;; (format (if output-file
+			  ;; 	      org-babel-julia-write-object-with-fileio-command
+			  ;; 	    org-babel-julia-write-object-command)
+			  ;; 	  body)
+			  body
+			  ))))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
@@ -251,12 +353,6 @@ string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
   (case result-type
     (value
-     ;; (with-temp-buffer
-     ;;   (insert (org-babel-chomp body))
-     ;;   (let ((ess-local-process-name
-     ;; 	      (process-name (get-buffer-process session)))
-     ;; 	     (ess-eval-visibly-p nil))
-     ;; 	 (ess-eval-buffer nil)))
      (let ((tmp-file (or output-file (org-babel-temp-file "julia-")))
 	   (suppress (string-equal (substring (string-trim-right body) -1) ";")))
        (org-babel-comint-eval-invisibly-and-wait-for-file
@@ -268,7 +364,14 @@ last statement in BODY, as elisp."
 		(org-babel-process-file-name tmp-file 'noquote)
 		;; (format "try\n%s\ncatch e\ne\nfinally\nend" body)
 		;; (format "begin\n%s\nend" body)
-		(format "try\n@eval(%s)\ncatch e\ndisplay(OrgEmacs(\"%s\"),e)\nend"
+;;; eval used to allow variable declaration in global scope
+		(format "try
+                           @eval(begin
+                                   %s
+                                 end)
+                         catch e
+                           e
+                        end"
 			body tmp-file)
 		))
        (org-babel-julia-process-value-result
@@ -279,23 +382,37 @@ last statement in BODY, as elisp."
 	  (org-babel-import-elisp-from-file tmp-file '(4)))
 	column-names-p)))
     (output
-     (mapconcat
-      #'org-babel-chomp
-      (butlast
-       (delq nil
-	     (mapcar
-	      (lambda (line) (when (> (length line) 0) line))
-	      (mapcar
-	       (lambda (line) ;; cleanup extra prompts left in output
-		 (if (string-match
-		      "^\\([ ]*[>+\\.][ ]?\\)+\\([[0-9]+\\|[ ]\\)" line)
-		     (substring line (match-end 1))
-		   line))
-	       (org-babel-comint-with-output (session org-babel-julia-eoe-output)
-		 (insert (mapconcat #'org-babel-chomp
-				    (list body org-babel-julia-eoe-indicator)
-				    "\n"))
-		 (inferior-ess-send-input)))))) "\n"))))
+     (let ((tmp-file (or output-file (org-babel-temp-file "julia-")))
+	   (suppress (string-equal (substring (string-trim-right body) -1) ";")))
+       (org-babel-comint-eval-invisibly-and-wait-for-file
+	session tmp-file
+	(format "fn, out = mktemp();
+                  try
+            redirect_stdout(out) do
+                redirect_stderr(out) do
+                       @eval(begin
+                            %s
+                            end)
+                end
+            end
+catch e
+            redirect_stdout(out) do
+                redirect_stderr(out) do
+    println(string(\"ERROR: \", e))
+                end
+            end
+finally
+    close(out);
+    mv(fn, %S, force = true)
+end"
+		body tmp-file))
+       (org-babel-julia-process-value-result
+	(org-babel-result-cond result-params
+	  (with-temp-buffer
+	    (insert-file-contents tmp-file)
+	    (buffer-string))
+	  (org-babel-import-elisp-from-file tmp-file '(4)))
+	column-names-p)))))
 
 (defun org-babel-julia-process-value-result (result column-names-p)
   "julia-specific processing of return value.
