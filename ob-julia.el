@@ -6,16 +6,16 @@
 ;; Org-Babel support for evaluating julia code
 
 ;;; Code:
+(require 'cl-lib)
 (require 'ob)
-(eval-when-compile (require 'cl))
 
 (declare-function orgtbl-to-csv "org-table" (table params))
 (declare-function julia "ext:ess-julia" (&optional start-args))
 (declare-function inferior-ess-send-input "ext:ess-inf" ())
 (declare-function ess-make-buffer-current "ext:ess-inf" ())
 (declare-function ess-eval-buffer "ext:ess-inf" (vis))
-(declare-function org-number-sequence "org-compat" (from &optional to inc))
-(declare-function org-remove-if-not "org" (predicate seq))
+(declare-function ess-wait-for-process "ext:ess-inf"
+		  (&optional proc sec-prompt wait force-redisplay))
 
 (defconst org-babel-header-args:julia
   '((width		 . :any)
@@ -30,54 +30,66 @@
 
 (defvar org-babel-default-header-args:julia '())
 
-(defcustom org-babel-julia-command inferior-julia-program-name
+(defvar inferior-julia-program "julia")
+
+(defcustom org-babel-julia-command inferior-julia-program
   "Name of command to use for executing julia code."
   :group 'org-babel
   :version "24.3"
   :type 'string)
 
+(defvar ess-current-process-name) ; dynamically scoped
 (defvar ess-local-process-name) ; dynamically scoped
 (defun org-babel-edit-prep:julia (info)
-  (let ((session (cdr (assoc :session (nth 2 info)))))
-    (when (and session (string-match "^\\*\\(.+?\\)\\*$" session))
-      (save-match-data (org-babel-julia-initiate-session session nil)))))
+  (let ((session (cdr (assq :session (nth 2 info)))))
+    (when (and session
+	       (string-prefix-p "*"  session)
+	       (string-suffix-p "*" session))
+      (org-babel-julia-initiate-session session nil))))
 
-(defun org-babel-expand-body:julia (body params &optional graphics-file)
+(defun org-babel-expand-body:julia (body params &optional _graphics-file)
   "Expand BODY according to PARAMS, return the expanded body."
-  (let ((graphics-file
-	 (or graphics-file (org-babel-julia-graphical-output-file params))))
-    (mapconcat
-     #'identity
-     ((lambda (inside)
-	(if graphics-file
-            inside 
-	  inside)
-	)
-      (append (org-babel-variable-assignments:julia params)
-	      (list body))) "\n")))
+  (mapconcat 'identity
+	     (append
+	      (when (cdr (assq :prologue params))
+		(list (cdr (assq :prologue params))))
+	      (org-babel-variable-assignments:julia params)
+	      (list body)
+	      (when (cdr (assq :epilogue params))
+		(list (cdr (assq :epilogue params)))))
+	     "\n"))
 
 (defun org-babel-execute:julia (body params)
   "Execute a block of julia code.
 This function is called by `org-babel-execute-src-block'."
   (save-excursion
-    (let* ((result-params (cdr (assoc :result-params params)))
-	   (result-type (cdr (assoc :result-type params)))
+    (let* ((result-params (cdr (assq :result-params params)))
+	   (result-type (cdr (assq :result-type params)))
            (session (org-babel-julia-initiate-session
-		     (cdr (assoc :session params)) params))
-	   (colnames-p (cdr (assoc :colnames params)))
-	   (rownames-p (cdr (assoc :rownames params)))
-	   (graphics-file (org-babel-julia-graphical-output-file params))
+		     (cdr (assq :session params)) params))
+	   (graphics-file (and (member "graphics" (assq :result-params params))
+			       (org-babel-graphical-output-file params)))
+	   (colnames-p (unless graphics-file (cdr (assq :colnames params))))
+	   (rownames-p (unless graphics-file (cdr (assq :rownames params))))
 	   (full-body (org-babel-expand-body:julia body params graphics-file))
 	   (result
 	    (org-babel-julia-evaluate
 	     session full-body result-type result-params
 	     (or (equal "yes" colnames-p)
 		 (org-babel-pick-name
-		  (cdr (assoc :colname-names params)) colnames-p))
+		  (cdr (assq :colname-names params)) colnames-p))
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
-		  (cdr (assoc :rowname-names params)) rownames-p)))))
-      (if graphics-file nil result))))
+		  (cdr (assq :rowname-names params)) rownames-p)))))
+      (if graphics-file nil (if (and result (sequencep result))
+                                (org-babel-normalize-newline result)
+                              result)))))
+
+(defun org-babel-normalize-newline (result)
+  (replace-regexp-in-string
+   "\\(\n\r?\\)\\{2,\\}"
+   ""
+   result))
 
 (defun org-babel-prep-session:julia (session params)
   "Prepare SESSION according to the header arguments specified in PARAMS."
@@ -102,23 +114,21 @@ This function is called by `org-babel-execute-src-block'."
 
 (defun org-babel-variable-assignments:julia (params)
   "Return list of julia statements assigning the block's variables."
-  (let ((vars (if (fboundp 'org-babel-get-header)
-                  (mapcar #'cdr (org-babel-get-header params :var))
-                (mapcar #'cdr (org-babel--get-vars params)))))
+  (let ((vars (org-babel--get-vars params)))
     (mapcar
      (lambda (pair)
        (org-babel-julia-assign-elisp
 	(car pair) (cdr pair)
-	(equal "yes" (cdr (assoc :colnames params)))
-	(equal "yes" (cdr (assoc :rownames params)))))
+	(equal "yes" (cdr (assq :colnames params)))
+	(equal "yes" (cdr (assq :rownames params)))))
      (mapcar
       (lambda (i)
 	(cons (car (nth i vars))
 	      (org-babel-reassemble-table
 	       (cdr (nth i vars))
-	       (cdr (nth i (cdr (assoc :colname-names params))))
-	       (cdr (nth i (cdr (assoc :rowname-names params)))))))
-      (org-number-sequence 0 (1- (length vars)))))))
+	       (cdr (nth i (cdr (assq :colname-names params))))
+	       (cdr (nth i (cdr (assq :rowname-names params)))))))
+      (number-sequence 0 (1- (length vars)))))))
 
 (defun org-babel-julia-quote-csv-field (s)
   "Quote field S for export to julia."
@@ -129,40 +139,37 @@ This function is called by `org-babel-execute-src-block'."
 (defun org-babel-julia-assign-elisp (name value colnames-p rownames-p)
   "Construct julia code assigning the elisp VALUE to a variable named NAME."
   (if (listp value)
-      (let ((max (apply #'max (mapcar #'length (org-remove-if-not
-						#'sequencep value))))
-	    (min (apply #'min (mapcar #'length (org-remove-if-not
-						#'sequencep value))))
-	    (transition-file (org-babel-temp-file "julia-import-")))
-        ;; ensure VALUE has an orgtbl structure (depth of at least 2)
+      (let* ((lengths (mapcar 'length (cl-remove-if-not 'sequencep value)))
+             (max (if lengths (apply 'max lengths) 0))
+             (min (if lengths (apply 'min lengths) 0)))
+        ;; Ensure VALUE has an orgtbl structure (depth of at least 2).
         (unless (listp (car value)) (setq value (list value)))
-        (with-temp-file transition-file
-          (insert
-	   (orgtbl-to-csv value '(:fmt org-babel-julia-quote-csv-field))
-	   "\n"))
-	(let ((file (org-babel-process-file-name transition-file 'noquote))
-	      (header (if (or (eq (nth 1 value) 'hline) colnames-p)
-			  "TRUE" "FALSE"))
-	      (row-names (if rownames-p "1" "NULL")))
-	  (if (= max min)
-	      (format "%s = readcsv(\"%s\")" name file)
-	    (format "%s = readcsv(\"%s\")"
-		    name file))))
+        (let ((file (orgtbl-to-tsv value '(:fmt org-babel-julia-quote-tsv-field)))
+              (header (if (or (eq (nth 1 value) 'hline) colnames-p)
+                          "TRUE" "FALSE"))
+              (row-names (if rownames-p "1" "NULL")))
+          (if (= max min)
+              (format "%s = readdlm(\"%s\")" name file)
+            (format "%s = readdlm(\"%s\")"
+                    name file))))
     (format "%s = %s" name (org-babel-julia-quote-csv-field value))))
 
 (defvar ess-ask-for-ess-directory) ; dynamically scoped
-
 (defun org-babel-julia-initiate-session (session params)
   "If there is not a current julia process then create one."
   (unless (string= session "none")
-    (let ((session (or session "*julia*"))
+    (let ((session (or session "*Julia*"))
 	  (ess-ask-for-ess-directory
-	   (and (and (boundp 'ess-ask-for-ess-directory) ess-ask-for-ess-directory)
-		(not (cdr (assoc :dir params))))))
+	   (and (boundp 'ess-ask-for-ess-directory)
+		ess-ask-for-ess-directory
+		(not (cdr (assq :dir params))))))
       (if (org-babel-comint-buffer-livep session)
 	  session
 	(save-window-excursion
-	  (require 'ess) (julia)
+	  (when (get-buffer session)
+	    ;; Session buffer exists, but with dead process
+	    (set-buffer session))
+          (require 'ess) (set-buffer (julia))
 	  (rename-buffer
 	   (if (bufferp session)
 	       (buffer-name session)
@@ -171,13 +178,13 @@ This function is called by `org-babel-execute-src-block'."
 	       (buffer-name))))
 	  (current-buffer))))))
 
-(defun org-babel-julia-associate-session (session)
-  "Associate julia code buffer with a julia session.
-Make SESSION be the inferior ESS process associated with the
-current code buffer."
-  (setq ess-local-process-name
-	(process-name (get-buffer-process session)))
-  (ess-make-buffer-current))
+; (defun org-babel-julia-associate-session (session)
+;   "Associate julia code buffer with a julia session.
+; Make SESSION be the inferior ESS process associated with the
+; current code buffer."
+;   (setq ess-local-process-name
+; 	(process-name (get-buffer-process session)))
+;   (ess-make-buffer-current))
 
 (defun org-babel-julia-graphical-output-file (params)
   "Name of file to which julia should send graphical output."
@@ -187,11 +194,10 @@ current code buffer."
 (defvar org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
-(defvar org-babel-julia-write-object-command "writecsv(\"%s\",%s)")
-
-;; The following was a very complicated write object command
-;; The replacement needs to add error catching
-;(defvar org-babel-julia-write-object-command "{function(object,transfer.file){object;invisible(if(inherits(try({tfile<-tempfile();write.table(object,file=tfile,sep=\"\\t\",na=\"nil\",row.names=%s,col.names=%s,quote=FALSE);file.rename(tfile,transfer.file)},silent=TRUE),\"try-error\")){if(!file.exists(transfer.file))file.create(transfer.file)})}}(object=%s,transfer.file=\"%s\")")
+(defvar org-babel-julia-write-object-command "begin
+    using DelimitedFiles
+    writedlm(\"%s\", \",\", [ %s ])
+end")
 
 (defun org-babel-julia-evaluate
   (session body result-type result-params column-names-p row-names-p)
@@ -208,13 +214,13 @@ current code buffer."
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
-  (case result-type
+  (cl-case result-type
     (value
      (let ((tmp-file (org-babel-temp-file "julia-")))
        (org-babel-eval org-babel-julia-command
 		       (format org-babel-julia-write-object-command
 			       (org-babel-process-file-name tmp-file 'noquote)
-			       (format "begin\n%s\nend" body)))
+			       (format "(function () %s end)()" body)))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
@@ -230,7 +236,7 @@ last statement in BODY, as elisp."
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
 last statement in BODY, as elisp."
-  (case result-type
+  (cl-case result-type
     (value
      (with-temp-buffer
        (insert (org-babel-chomp body))
@@ -252,7 +258,7 @@ last statement in BODY, as elisp."
 	column-names-p)))
     (output
      (mapconcat
-      #'org-babel-chomp
+      'org-babel-chomp
       (butlast
        (delq nil
 	     (mapcar
@@ -260,14 +266,15 @@ last statement in BODY, as elisp."
 	      (mapcar
 	       (lambda (line) ;; cleanup extra prompts left in output
 		 (if (string-match
-		      "^\\([ ]*[>+\\.][ ]?\\)+\\([[0-9]+\\|[ ]\\)" line)
+		      "^\\([>+.]\\([ ][>.+]\\)*[ ]\\)"
+		      (car (split-string line "\n")))
 		     (substring line (match-end 1))
 		   line))
 	       (org-babel-comint-with-output (session org-babel-julia-eoe-output)
-		 (insert (mapconcat #'org-babel-chomp
+		 (insert (mapconcat 'org-babel-chomp
 				    (list body org-babel-julia-eoe-indicator)
 				    "\n"))
-		 (inferior-ess-send-input)))))) "\n"))))
+                 (inferior-ess-send-input)))))) "\n"))))
 
 (defun org-babel-julia-process-value-result (result column-names-p)
   "julia-specific processing of return value.
