@@ -81,9 +81,12 @@ This function is called by `org-babel-execute-src-block'."
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
 		  (cdr (assq :rowname-names params)) rownames-p)))))
-       (if graphics-file nil (if (and result (sequencep result))
-                                 (org-babel-normalize-newline result)
-                               result)))))
+      (if graphics-file nil result))))
+
+; Code from https://github.com/gjkerns/ob-julia/pull/14
+;        (if graphics-file nil (if (and result (sequencep result))
+;                                  (org-babel-normalize-newline result)
+;                                result)))))
 
 (defun org-babel-normalize-newline (result)
   (replace-regexp-in-string
@@ -201,9 +204,9 @@ end"
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
 (defvar org-babel-julia-write-object-command "begin
-    local p_ans = [ %s ]
-    using CSV
-    CSV.write(\"%s\", p_ans)
+    local p_ans = %s
+    using CSV, DataFrames
+    CSV.write(\"%s\", typeof(p_ans) <: DataFrame ? p_ans : DataFrame(:ans => p_ans))
     p_ans
 end")
 
@@ -227,7 +230,7 @@ last statement in BODY, as elisp."
      (let ((tmp-file (org-babel-temp-file "julia-")))
        (org-babel-eval org-babel-julia-command
 		       (format org-babel-julia-write-object-command
-			       (format "(function () %s end)()" body)
+			       (format "begin %s end" body)
 			       (org-babel-process-file-name tmp-file 'noquote)
                                ))
        (org-babel-julia-process-value-result
