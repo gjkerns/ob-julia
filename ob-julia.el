@@ -81,14 +81,14 @@ This function is called by `org-babel-execute-src-block'."
 	     (or (equal "yes" rownames-p)
 		 (org-babel-pick-name
 		  (cdr (assq :rowname-names params)) rownames-p)))))
-      (if graphics-file nil (if (and result (sequencep result))
-                                (org-babel-normalize-newline result)
-                              result)))))
+       (if graphics-file nil (if (and result (sequencep result))
+                                 (org-babel-normalize-newline result)
+                               result)))))
 
 (defun org-babel-normalize-newline (result)
   (replace-regexp-in-string
    "\\(\n\r?\\)\\{2,\\}"
-   ""
+   "\n"
    result))
 
 (defun org-babel-prep-session:julia (session params)
@@ -149,8 +149,14 @@ This function is called by `org-babel-execute-src-block'."
                           "TRUE" "FALSE"))
               (row-names (if rownames-p "1" "NULL")))
           (if (= max min)
-              (format "%s = readdlm(\"%s\")" name file)
-            (format "%s = readdlm(\"%s\")"
+              (format "%s = begin
+    using CSV
+    CSV.read(\"%s\")
+end" name file)
+            (format "%s = begin
+    using CSV
+    CSV.read(\"%s\")
+end"
                     name file))))
     (format "%s = %s" name (org-babel-julia-quote-csv-field value))))
 
@@ -195,8 +201,10 @@ This function is called by `org-babel-execute-src-block'."
 (defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
 
 (defvar org-babel-julia-write-object-command "begin
-    using DelimitedFiles
-    writedlm(\"%s\", \",\", [ %s ])
+    local p_ans = [ %s ]
+    using CSV
+    CSV.write(\"%s\", p_ans)
+    p_ans
 end")
 
 (defun org-babel-julia-evaluate
@@ -219,8 +227,9 @@ last statement in BODY, as elisp."
      (let ((tmp-file (org-babel-temp-file "julia-")))
        (org-babel-eval org-babel-julia-command
 		       (format org-babel-julia-write-object-command
+			       (format "(function () %s end)()" body)
 			       (org-babel-process-file-name tmp-file 'noquote)
-			       (format "(function () %s end)()" body)))
+                               ))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
@@ -248,7 +257,9 @@ last statement in BODY, as elisp."
        (org-babel-comint-eval-invisibly-and-wait-for-file
 	session tmp-file
 	(format org-babel-julia-write-object-command
-		(org-babel-process-file-name tmp-file 'noquote) "ans"))
+                "ans"
+		(org-babel-process-file-name tmp-file 'noquote)
+                ))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
 	  (with-temp-buffer
