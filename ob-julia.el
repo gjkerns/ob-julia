@@ -256,6 +256,7 @@ last statement in BODY, as elisp."
 		       (format org-babel-julia-write-object-command
 			       (format "begin %s end" body)
 			       (org-babel-process-file-name tmp-file 'noquote)
+                               (if column-names-p "true" "false")
                                ))
        (org-babel-julia-process-value-result
 	(org-babel-result-cond result-params
