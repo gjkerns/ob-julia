@@ -201,11 +201,37 @@ end"
 (defconst org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
 (defconst org-babel-julia-eoe-output "org_babel_julia_eoe")
 
-(defvar org-babel-julia-write-object-command "begin
+(defconst org-babel-julia-write-object-command "begin
     local p_ans = %s
-    using CSV, DataFrames
-    CSV.write(\"%s\", typeof(p_ans) <: DataFrame ? p_ans : DataFrame(:ans => p_ans))
-    p_ans
+    local p_tmp_file = \"%s\"
+
+    try
+        using CSV, DataFrames
+
+        if typeof(p_ans) <: DataFrame
+           p_ans_df = p_ans
+        else
+            p_ans_df = DataFrame(:ans => p_ans)
+        end
+
+        CSV.write(p_tmp_file,
+                  p_ans_df,
+                  writeheader = %s,
+                  transform = (col, val) -> something(val, missing),
+                  missingstring = \"nil\",
+                  quotestrings = false)
+        p_ans
+    catch e
+        err_msg = \"Source block evaluation failed. $e\"
+        CSV.write(p_tmp_file,
+                  DataFrame(:ans => err_msg),
+                  writeheader = false,
+                  transform = (col, val) -> something(val, missing),
+                  missingstring = \"nil\",
+                  quotestrings = false)
+
+        err_msg
+    end
 end")
 
 (defun org-babel-julia-evaluate
