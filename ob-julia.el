@@ -30,9 +30,7 @@
 
 (defvar org-babel-default-header-args:julia '())
 
-(defvar inferior-julia-program "julia")
-
-(defcustom org-babel-julia-command inferior-julia-program
+(defcustom org-babel-julia-command "julia"
   "Name of command to use for executing julia code."
   :group 'org-babel
   :version "24.3"
