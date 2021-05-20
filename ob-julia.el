@@ -17,7 +17,7 @@
 (declare-function ess-wait-for-process "ext:ess-inf"
 		  (&optional proc sec-prompt wait force-redisplay))
 
-(defconst org-babel-header-args:julia
+(defvar org-babel-header-args:julia
   '((width		 . :any)
     (horizontal		 . :any)
     (results             . ((file list vector table scalar verbatim)
@@ -200,8 +200,8 @@ end"
   (and (member "graphics" (cdr (assq :result-params params)))
        (cdr (assq :file params))))
 
-(defvar org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
-(defvar org-babel-julia-eoe-output "org_babel_julia_eoe")
+(defconst org-babel-julia-eoe-indicator "print(\"org_babel_julia_eoe\")")
+(defconst org-babel-julia-eoe-output "org_babel_julia_eoe")
 
 (defvar org-babel-julia-write-object-command "begin
     local p_ans = %s
